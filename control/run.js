@@ -2,9 +2,9 @@ var wpi = require('wiring-pi');
 wpi.wiringPiSetupGpio();
 
 //drive
-const drivePWMPin = 4;
-const drivePin1 = 2;
-const drivePin2 = 3;
+const drivePWMPin = 14;
+const drivePin1 = 15;
+const drivePin2 = 18;
 wpi.pinMode(drivePin1, wpi.OUTPUT);
 wpi.pinMode(drivePin2, wpi.OUTPUT);
 wpi.pinMode(drivePWMPin, wpi.OUTPUT);
