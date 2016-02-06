@@ -2,9 +2,9 @@
 
 var wpi = require('wiring-pi');
 var RFSensor = require("./sensors/rf.js");
-var drivePWMPin = 14;
-var drivePin1 = 15;
-var drivePin2 = 18;
+var drivePWMPin = 18;
+var drivePin1 = 23;
+var drivePin2 = 24;
 
 var steerPWMPin = 17;
 var steerPin1 = 27;

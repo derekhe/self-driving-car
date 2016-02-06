@@ -9,23 +9,23 @@ export default class Pad extends React.Component {
 
     forward = () => {
         this.sock.send("forward");
-    }
+    };
 
     backward = () => {
         this.sock.send("backward");
-    }
+    };
 
     left = () => {
         this.sock.send("left");
-    }
+    };
 
     right = () => {
         this.sock.send("right");
-    }
+    };
 
     restore = () => {
         this.sock.send("pause");
-    }
+    };
 
     render() {
         return (
