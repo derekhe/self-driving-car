@@ -1,21 +1,23 @@
 var Car = require("./car.js");
 var RFSensor = require("./sensors/rf.js");
+var SpeedSensor = require("./sensors/speed.js");
 
 class CarController {
     constructor() {
         this.car = new Car();
-        this.rf = new RFSensor();
+        this.rfSensor = new RFSensor();
         this.rfCount = 0;
         this.rfMaxCount = 10;
         this.forwarding = false;
+        this.speedSensor = new SpeedSensor();
         setTimeout(this._detectRange.bind(this), 1);
     }
 
     _detectRange() {
-        var dist = this.rf.distance;
+        var dist = this.rfSensor.distance;
         if (dist < 50) {
             this.rfCount++;
-            if (this.rfCount > this.rfMaxCount && this.forwarding) {
+            if (this.rfCount > this.rfMaxCount && (this.speedSensor.speed != 0) && this.forwarding) {
                 console.log("pause", dist);
                 this.car.pause();
                 this.forwarding = false;
@@ -58,7 +60,14 @@ class CarController {
     registerDistanceNotify(func) {
         var self = this;
         setInterval(function () {
-            func(self.rf.distance)
+            func(self.rfSensor.distance);
+        }, 100);
+    }
+
+    registerSpeedNotify(func){
+        var self = this;
+        setInterval(function () {
+            func(self.speedSensor.speed);
         }, 100);
     }
 }

@@ -24,8 +24,12 @@ echo.on('connection', function (conn) {
     });
 
     carCtrl.registerDistanceNotify(function(dist){
-        conn.write(dist);
-    })
+        conn.write(JSON.stringify({type:"distance", value:dist}));
+    });
+
+    carCtrl.registerSpeedNotify(function(speed){
+        conn.write(JSON.stringify({type:"speed", value:speed}));
+    });
 });
 
 var server = http.createServer();

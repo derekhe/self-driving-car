@@ -30,7 +30,15 @@ app.controller("carController", function ($scope, $window) {
     };
 
     sock.onmessage = function (e) {
-        $scope.dist = e.data;
+        var data = JSON.parse(e.data);
+        switch(data.type){
+            case "distance":
+                $scope.dist = data.value;
+                break;
+            case "speed":
+                $scope.speed = data.value;
+                break;
+        }
         $scope.$digest();
     };
     sock.onclose = function () {

@@ -14,7 +14,11 @@
 <body>
 <div class="container" ng-controller="carController" ng-keypress="keydown($event)">
     <p>
-        {{dist}}
+        Distance Sensor: {{dist|number:1}}cm
+    </p>
+
+    <p>
+        Speed Sensor: {{speed*100 | number:1}}cm/s
     </p>
 
     <table class="table">
@@ -22,24 +26,32 @@
         <tr class="row">
             <td class="col-md-4"></td>
             <td class="col-md-4">
-                <button type="button" class="btn btn-success btn-block" ng-mousedown="forward()" ng-mouseup="pause()">Forward</button>
+                <button type="button" class="btn btn-success btn-block" ng-mousedown="forward()" ng-mouseup="pause()">
+                    Forward
+                </button>
             </td>
             <td class="col-md-4"></td>
         </tr>
         <tr class="row">
             <td>
-                <button type="button" class="btn btn-success btn-block" ng-mousedown="left()" ng-mouseup="releaseSteer()">Left</button>
+                <button type="button" class="btn btn-success btn-block" ng-mousedown="left()"
+                        ng-mouseup="releaseSteer()">Left
+                </button>
             </td>
             <td></td>
             <td>
-                <button type="button" class="btn btn-success btn-block" ng-mousedown="right()" ng-mouseup="releaseSteer()">Right</button>
+                <button type="button" class="btn btn-success btn-block" ng-mousedown="right()"
+                        ng-mouseup="releaseSteer()">Right
+                </button>
             </td>
         </tr>
         <tr class="row">
             <td>
             </td>
             <td>
-                <button type="button" class="btn btn-success btn-block" ng-mousedown="backward()" ng-mouseup="pause()">Back</button>
+                <button type="button" class="btn btn-success btn-block" ng-mousedown="backward()" ng-mouseup="pause()">
+                    Back
+                </button>
             </td>
             <td></td>
         </tr>
