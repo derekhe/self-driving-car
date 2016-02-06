@@ -1,7 +1,6 @@
 'use strict';
 
 var wpi = require('wiring-pi');
-var RFSensor = require("./sensors/rf.js");
 var drivePWMPin = 18;
 var drivePin1 = 23;
 var drivePin2 = 24;
@@ -23,29 +22,6 @@ class Car {
         wpi.pinMode(steerPin1, wpi.OUTPUT);
         wpi.pinMode(steerPin2, wpi.OUTPUT);
         wpi.pinMode(steerPWMPin, wpi.OUTPUT);
-
-        this.rf = new RFSensor();
-        this.rfCount = 0;
-        this.rfMaxCount = 50;
-        setTimeout(this._detectRange.bind(this), 0);
-    }
-
-    _detectRange() {
-        var dist = this.rf.distance;
-        if (dist < 100) {
-            this.rfCount++;
-            if (this.rfCount > this.rfMaxCount) {
-                this.pause();
-                this.backward(1);
-                console.log(dist);
-                setTimeout(this.pause, 500);
-            }
-        }
-        else {
-            this.rfCount = 0;
-        }
-
-        setTimeout(this._detectRange.bind(this), 0);
     }
 
     forward(speed = 0.5) {
@@ -61,7 +37,6 @@ class Car {
     }
 
     pause() {
-        console.log("Pause");
         wpi.digitalWrite(drivePin1, 0);
         wpi.digitalWrite(drivePin2, 0);
         wpi.softPwmWrite(drivePWMPin, 0);

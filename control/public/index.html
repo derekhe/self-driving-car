@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="/static/angular/angular.min.js"></script>
+    <script src="//cdn.jsdelivr.net/sockjs/1.0.3/sockjs.min.js"></script>
+    <script src='/static/fastclick/lib/fastclick.js'></script>
+    <script src="/js/app.js"></script>
+    <link rel="stylesheet" href="/static/bootstrap/dist/css/bootstrap.min.css"/>
+</head>
+<body>
+<div class="container" ng-controller="carController" ng-keypress="keydown($event)">
+    <p>
+        {{dist}}
+    </p>
+
+    <table class="table">
+        <tbody>
+        <tr class="row">
+            <td class="col-md-4"></td>
+            <td class="col-md-4">
+                <button type="button" class="btn btn-success btn-block" ng-mousedown="forward()" ng-mouseup="pause()">Forward</button>
+            </td>
+            <td class="col-md-4"></td>
+        </tr>
+        <tr class="row">
+            <td>
+                <button type="button" class="btn btn-success btn-block" ng-mousedown="left()" ng-mouseup="releaseSteer()">Left</button>
+            </td>
+            <td></td>
+            <td>
+                <button type="button" class="btn btn-success btn-block" ng-mousedown="right()" ng-mouseup="releaseSteer()">Right</button>
+            </td>
+        </tr>
+        <tr class="row">
+            <td>
+            </td>
+            <td>
+                <button type="button" class="btn btn-success btn-block" ng-mousedown="backward()" ng-mouseup="pause()">Back</button>
+            </td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
