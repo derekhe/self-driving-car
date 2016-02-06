@@ -13,7 +13,7 @@ class CarController {
 
     _detectRange() {
         var dist = this.rf.distance;
-        if (dist < 100) {
+        if (dist < 50) {
             this.rfCount++;
             if (this.rfCount > this.rfMaxCount && this.forwarding) {
                 console.log("pause", dist);
