@@ -1,15 +1,16 @@
 import React from 'react';
-import styles from './app.css';
+import Pad from './pad.js';
 
 export default class App extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-  render() {
-    return (
-      <div className={styles.app}>
-        Car
-      </div>
-    );
-  }
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div className="container">
+                <Pad/>
+            </div>
+        );
+    }
 }
