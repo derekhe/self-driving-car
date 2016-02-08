@@ -2,6 +2,7 @@ var Car = require("./car.js");
 var RFSensor = require("./sensors/rf.js");
 var SpeedSensor = require("./sensors/speed.js");
 var MagSensor = require("./sensors/mag.js");
+var AccSensor = require("./sensors/acc.js");
 
 class CarController {
     constructor() {
@@ -12,6 +13,7 @@ class CarController {
         this.forwarding = false;
         this.speedSensor = new SpeedSensor();
         this.magSensor = new MagSensor();
+        this.accSensor = new AccSensor();
         setTimeout(this._detectRange.bind(this), 1);
     }
 
@@ -77,6 +79,13 @@ class CarController {
         var self = this;
         setInterval(function () {
             func(self.magSensor.axeses);
+        }, 100);
+    }
+
+    registerAccNotify(func){
+        var self = this;
+        setInterval(function () {
+            func(self.accSensor.axeses);
         }, 100);
     }
 }

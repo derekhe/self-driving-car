@@ -31,12 +31,18 @@ app.controller("carController", function ($scope, $window) {
 
     sock.onmessage = function (e) {
         var data = JSON.parse(e.data);
-        switch(data.type){
+        switch (data.type) {
             case "distance":
                 $scope.dist = data.value;
                 break;
             case "speed":
                 $scope.speed = data.value;
+                break;
+            case "mag":
+                $scope.mag = data.value;
+                break;
+            case "acc":
+                $scope.acc = data.value;
                 break;
         }
         $scope.$digest();

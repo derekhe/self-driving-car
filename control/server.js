@@ -32,7 +32,11 @@ echo.on('connection', function (conn) {
     });
 
     carCtrl.registerMagNotify( function(mag){
-        console.log(mag);
+        conn.write(JSON.stringify({type:"mag", value:mag}));
+    })
+
+    carCtrl.registerAccNotify( function(acc){
+        conn.write(JSON.stringify({type:"acc", value:acc}));
     })
 });
 
