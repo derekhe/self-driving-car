@@ -26,7 +26,6 @@ class SpeedSensor {
             if (timeElapsed > 0.2) {
                 self._speed = count * 5.5 /100.0 * Math.PI / timeElapsed;
                 timeBegin = now;
-                console.log(self._speed);
                 count = 0;
             }
 

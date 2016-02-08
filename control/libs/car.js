@@ -81,8 +81,9 @@ process.on('exit', cleanUp);
 process.on('SIGINT', cleanUp);
 
 //catches uncaught exceptions
-process.on('uncaughtException', (err)=> {
-    console.log(`uncaughtException ${err}`);
+process.on('uncaughtException', (ex)=> {
+    console.log(`uncaughtException ${ex}`);
+    console.log(ex, ex.stack.split("\n"))
     cleanUp();
 });
 

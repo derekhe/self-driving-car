@@ -30,6 +30,10 @@ echo.on('connection', function (conn) {
     carCtrl.registerSpeedNotify(function(speed){
         conn.write(JSON.stringify({type:"speed", value:speed}));
     });
+
+    carCtrl.registerMagNotify( function(mag){
+        console.log(mag);
+    })
 });
 
 var server = http.createServer();
