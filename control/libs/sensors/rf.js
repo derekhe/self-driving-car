@@ -9,7 +9,7 @@ class RFSensor {
     }
 
     get distance(){
-        var volts = wpi.analogRead(200) * 5.0 / 256.0;
+        var volts = wpi.analogRead(200) * 3.3 / 256.0;
         return 60.495 * Math.pow(volts,-1.1904);
     }
 }
