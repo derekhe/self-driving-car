@@ -12,7 +12,13 @@ class CarController {
         this.rfMaxCount = 10;
         this.forwarding = false;
         this.speedSensor = new SpeedSensor();
-        this.magSensor = new MagSensor();
+        this.magSensor = new MagSensor({
+            offset: {
+                x: 12.5,
+                y: -642,
+                z: 0
+            }
+        });
         this.accSensor = new AccSensor();
         setTimeout(this._detectRange.bind(this), 1);
     }
@@ -68,21 +74,24 @@ class CarController {
         }, 100);
     }
 
-    registerSpeedNotify(func){
+    registerSpeedNotify(func) {
         var self = this;
         setInterval(function () {
             func(self.speedSensor.speed);
         }, 100);
     }
 
-    registerMagNotify(func){
+    registerMagNotify(func) {
         var self = this;
         setInterval(function () {
-            func(self.magSensor.axeses);
+            func({
+                axeses: self.magSensor.axeses,
+                heading: self.magSensor.heading
+            });
         }, 100);
     }
 
-    registerAccNotify(func){
+    registerAccNotify(func) {
         var self = this;
         setInterval(function () {
             func(self.accSensor.axeses);
