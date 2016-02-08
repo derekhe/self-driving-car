@@ -5,11 +5,13 @@
 var wpi = require('wiring-pi');
 
 const LSM303_REGISTER_MAG_MR_REG_M = 0x02;
+const LSM303_REGISTER_MAG_CRA_REG_M = 0x00;
 
 class MagSensor {
     constructor(options = {}) {
         wpi.wiringPiSetupGpio();
         this.mag = wpi.wiringPiI2CSetup(0x1e);
+        wpi.wiringPiI2CWriteReg8(this.mag, LSM303_REGISTER_MAG_CRA_REG_M, 0x18);
         wpi.wiringPiI2CWriteReg8(this.mag, LSM303_REGISTER_MAG_MR_REG_M, 0x00);
 
         this.offset = options.offset;
