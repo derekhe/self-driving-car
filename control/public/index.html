@@ -34,7 +34,9 @@
         <tr class="row">
             <td class="col-md-4"></td>
             <td class="col-md-4">
-                <button type="button" class="btn btn-success btn-block" ng-mousedown="forward()" ng-mouseup="pause()">
+                <button type="button" class="btn btn-success btn-block"
+                        ng-mousedown="forward()" ng-mouseup="pause()"
+                        my-touchstart="forward()" my-touchend="pause()">
                     Forward
                 </button>
             </td>
@@ -42,14 +44,18 @@
         </tr>
         <tr class="row">
             <td>
-                <button type="button" class="btn btn-success btn-block" ng-mousedown="left()"
-                        ng-mouseup="releaseSteer()">Left
+                <button type="button" class="btn btn-success btn-block"
+                        ng-mousedown="left()" ng-mouseup="releaseSteer()"
+                        my-touchstart="left()" my-touchend="releaseSteer()">
+                    Left
                 </button>
             </td>
             <td></td>
             <td>
-                <button type="button" class="btn btn-success btn-block" ng-mousedown="right()"
-                        ng-mouseup="releaseSteer()">Right
+                <button type="button" class="btn btn-success btn-block"
+                        ng-mousedown="right()" ng-mouseup="releaseSteer()"
+                        my-touchstart="right()" my-touchend="releaseSteer()"
+                >Right
                 </button>
             </td>
         </tr>
@@ -57,7 +63,10 @@
             <td>
             </td>
             <td>
-                <button type="button" class="btn btn-success btn-block" ng-mousedown="backward()" ng-mouseup="pause()">
+                <button type="button" class="btn btn-success btn-block"
+                        ng-mousedown="backward()" ng-mouseup="pause()"
+                        my-touchstart="backward()" my-touchend="pause()"
+                >
                     Back
                 </button>
             </td>
