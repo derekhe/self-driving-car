@@ -45,9 +45,9 @@ setInterval(function () {
     assignMinMax('y');
     assignMinMax('z');
 
-    console.log("Min", min);
-    console.log("Max", max);
-    console.log("Offset",
+    console.log("\tMin", min);
+    console.log("\tMax", max);
+    console.log("\tOffset",
         {
             x: offset('x'),
             y: offset('y'),
