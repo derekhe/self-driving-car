@@ -11,25 +11,34 @@ class MagSensor {
     constructor(options = {}) {
         wpi.wiringPiSetupGpio();
         this.mag = wpi.wiringPiI2CSetup(0x1e);
-        wpi.wiringPiI2CWriteReg8(this.mag, LSM303_REGISTER_MAG_CRA_REG_M, 0x10);
-        wpi.wiringPiI2CWriteReg8(this.mag, LSM303_REGISTER_MAG_MR_REG_M, 0x00);
 
         this.offset = options.offset;
     }
 
     get axeses() {
-        var bufferX = [wpi.wiringPiI2CReadReg8(this.mag, 0x03), wpi.wiringPiI2CReadReg8(this.mag, 0x04)];
-        var bufferY = [wpi.wiringPiI2CReadReg8(this.mag, 0x05), wpi.wiringPiI2CReadReg8(this.mag, 0x06)];
-        var bufferZ = [wpi.wiringPiI2CReadReg8(this.mag, 0x07), wpi.wiringPiI2CReadReg8(this.mag, 0x08)];
+        wpi.wiringPiI2CWriteReg8(this.mag, LSM303_REGISTER_MAG_CRA_REG_M, 0x10);
+        wpi.wiringPiI2CWriteReg8(this.mag, LSM303_REGISTER_MAG_MR_REG_M, 0x03);
+        wpi.wiringPiI2CWriteReg8(this.mag, LSM303_REGISTER_MAG_MR_REG_M, 0x00);
+
+        var buffer = this._readBytes(0x03, 6);
 
         return {
-            x: this._twoscomp((bufferX[0] << 8) | bufferX[1],16) - this.offset.x,
-            y: this._twoscomp((bufferY[0] << 8) | bufferY[1],16) - this.offset.y,
-            z: this._twoscomp((bufferZ[0] << 8) | bufferZ[1],16) - this.offset.z
+            x: this._twoscomp((buffer[0] << 8) | buffer[1], 16) - this.offset.x,
+            y: this._twoscomp((buffer[2] << 8) | buffer[3], 16) - this.offset.y,
+            z: this._twoscomp((buffer[4] << 8) | buffer[5], 16) - this.offset.z
         }
     }
 
-    get heading(){
+    _readBytes(baseAddr, bytesToRead) {
+        var bytes = [];
+        for (var i = 0; i < bytesToRead; i++) {
+            bytes.push(wpi.wiringPiI2CReadReg8(this.mag, 0x03 + i));
+        }
+
+        return bytes;
+    }
+
+    get heading() {
         var axeses = this.axeses;
         return this._toPolar(axeses.x, axeses.y);
     }
@@ -49,7 +58,7 @@ class MagSensor {
         var polarCoords = {};
         polarCoords.r = Math.sqrt(x * x + y * y);
         polarCoords.theta = Math.PI / 2 - Math.atan2(y, x);
-        if ( polarCoords.theta < 0 ) {
+        if (polarCoords.theta < 0) {
             polarCoords.theta += 2 * Math.PI;
         }
         polarCoords.theta = 2 * Math.PI - polarCoords.theta;
