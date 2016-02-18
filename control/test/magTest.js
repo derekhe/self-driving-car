@@ -5,13 +5,7 @@ require("babel-register");
 
 var MagSensor = require("../libs/sensors/mag.js");
 
-var mag = new MagSensor({
-    offset: {
-        x: 12.5,
-        y: -642,
-        z: 0
-    }
-});
+var mag = new MagSensor();
 
 var min = {
     x: 9999,
@@ -40,14 +34,11 @@ function offset(value) {
 }
 
 setInterval(function () {
-    console.log(mag.axeses, mag.heading);
     assignMinMax('x');
     assignMinMax('y');
     assignMinMax('z');
 
-    console.log("\tMin", min);
-    console.log("\tMax", max);
-    console.log("\tOffset",
+    console.log(mag.axeses, mag.heading, "Min", min, "Max", max, "Offset",
         {
             x: offset('x'),
             y: offset('y'),

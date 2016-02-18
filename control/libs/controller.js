@@ -13,11 +13,7 @@ class CarController {
         this.forwarding = false;
         this.speedSensor = new SpeedSensor();
         this.magSensor = new MagSensor({
-            offset: {
-                x: 12.5,
-                y: -642,
-                z: 0
-            }
+            offset: { x: 128.5, y: 489, z: -1019 }
         });
         this.accSensor = new AccSensor();
         setTimeout(this._detectRange.bind(this), 1);
@@ -25,13 +21,13 @@ class CarController {
 
     _detectRange() {
         var dist = this.rfSensor.distance;
-        if (dist < 50) {
+        if (dist < 20) {
             this.rfCount++;
             if (this.rfCount > this.rfMaxCount && (this.speedSensor.speed != 0) && this.forwarding) {
                 console.log("pause", dist);
                 this.car.pause();
                 this.forwarding = false;
-                this.car.backward(1);
+                //this.car.backward(1);
                 setTimeout(this.car.pause, 500);
             }
         }
@@ -77,7 +73,9 @@ class CarController {
     registerSpeedNotify(func) {
         var self = this;
         setInterval(function () {
-            func(self.speedSensor.speed);
+            func(
+                {speed: self.speedSensor.speed, distance: self.speedSensor.distance}
+            );
         }, 100);
     }
 

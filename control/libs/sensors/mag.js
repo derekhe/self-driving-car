@@ -8,7 +8,7 @@ const LSM303_REGISTER_MAG_CRA_REG_M = 0x00;
 const LSM303_REGISTER_MAG_MR_REG_M = 0x02;
 
 class MagSensor {
-    constructor(options = {}) {
+    constructor(options = {offset:{x:0,y:0,z:0}}) {
         wpi.wiringPiSetupGpio();
         this.mag = wpi.wiringPiI2CSetup(0x1e);
 

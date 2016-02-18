@@ -10,7 +10,9 @@ class SpeedSensor {
         var lastTimeRead = 0;
         var count = 0;
         var timeBegin = new Date();
+        this._distance = 0;
         var self = this;
+
         var detectSpeed = function () {
             var read = wpi.digitalRead(21);
 
@@ -23,8 +25,10 @@ class SpeedSensor {
 
             var now = new Date();
             var timeElapsed = (now - timeBegin) / 1000;
-            if (timeElapsed > 0.2) {
-                self._speed = count * 5.5 /100.0 * Math.PI / timeElapsed;
+            if (timeElapsed > 0.3) {
+                var distance = count * 2 * Math.PI * 5.4 / 100 / 4;
+                self._distance += distance;
+                self._speed = distance / timeElapsed;
                 timeBegin = now;
                 count = 0;
             }
@@ -37,6 +41,10 @@ class SpeedSensor {
 
     get speed() {
         return this._speed;
+    }
+
+    get distance(){
+        return this._distance;
     }
 }
 

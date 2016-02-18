@@ -36,7 +36,8 @@ app.controller("carController", function ($scope, $window) {
                 $scope.dist = data.value;
                 break;
             case "speed":
-                $scope.speed = data.value;
+                $scope.speed = data.value.speed;
+                $scope.distance = data.value.distance;
                 break;
             case "mag":
                 $scope.mag = data.value;
