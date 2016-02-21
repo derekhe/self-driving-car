@@ -4,6 +4,9 @@ import time
 import math
 
 class SpeedSensorThread(Thread):
+    speed = 0
+    distance = 0
+    
     def __init__(self):
         super().__init__()
         wiringpi2.wiringPiSetupGpio()

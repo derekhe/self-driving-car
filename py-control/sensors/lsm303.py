@@ -121,10 +121,10 @@ class LSM303DLHC(object):
 # Simple example prints accel/mag data once per second:
 if __name__ == '__main__':
 
-    from time import sleep
+    import datetime
 
     lsm = LSM303DLHC()
 
     print('[(Accelerometer X, Y, Z), (Magnetometer X, Y, Z, orientation)]')
     while True:
-        print(lsm.read(), lsm.calcTiltHeading())
+        print(datetime.datetime.now(), lsm.read(), lsm.calcTiltHeading())
