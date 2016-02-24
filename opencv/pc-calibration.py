@@ -41,15 +41,9 @@ print("calculating")
 # calibration
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(object_points, image_points, (w, h), None, None)
 
-print("camera matrix:\n", mtx);
-
 # pi camera intrinsic parameters
-ay = mtx[1, 1]
-u0 = mtx[0, 2]
-v0 = mtx[1, 2]
-print("Ay:", ay)
-print("u0:", u0)
-print("v0:", v0)
+print(mtx)
+print(dist)
 
 cv2.destroyAllWindows()
 
