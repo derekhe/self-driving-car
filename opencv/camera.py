@@ -11,6 +11,7 @@ camera = PiCamera()
 w = 320
 h = 240
 camera.resolution = (w, h)
+camera.hflip = True
 camera.framerate = 60
 camera.brightness = 70
 camera.contrast = 100
@@ -70,7 +71,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
         if findPixel(mask, c, 20, 55, 2):
             continue
 
-        if findPixel(mask, c, 56, 80, 6):
+        if findPixel(mask, c, 56, 80, 4):
             continue
 
         if findPixel(mask, c, 81, 226, 15):
