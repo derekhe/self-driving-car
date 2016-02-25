@@ -11,7 +11,6 @@ camera = PiCamera()
 w = 320
 h = 240
 camera.resolution = (w, h)
-camera.hflip = True
 camera.framerate = 60
 camera.brightness = 70
 camera.contrast = 100
@@ -78,6 +77,7 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
             continue
 
     drawReferenceLines()
+    cv2.imshow("image", grayImg)
     cv2.imshow('mask', mask)
 
     e2 = cv2.getTickCount()
