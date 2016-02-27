@@ -28,7 +28,7 @@ newcameramtx, roi = cv2.getOptimalNewCameraMatrix(mtx, dist, (w, h), 0, (w, h))
 
 
 def distance(pixel):
-    return 84134.5 - 0.0390032 * pixel - 53553.8 * math.atan(pixel ** 2)
+    return 84134.5 - 0.0390032 * pixel - 53553.8 * np.arctan(pixel ** 2)
 
 
 def drawReferenceLines():
@@ -44,19 +44,6 @@ def drawLine(row, column):
     cv2.line(mask, (column, row), (column, h), (255))
 
 
-def findPixel(mask, column, start, end, step):
-    for r in range(start, end, step):
-        pixel = mask[r, column]
-
-        if pixel > 0:
-            distance(pixel)
-
-            drawLine(r, column)
-            return True
-
-    return False
-
-
 # capture frames from the camera
 mapx, mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w, h), 5)
 
@@ -68,15 +55,13 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     grayImg = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     mask = cv2.threshold(grayImg, 160, 255, cv2.THRESH_BINARY)[1]
 
-    for c in range(0, w, 10):
-        if findPixel(mask, c, 20, 55, 2):
-            continue
+    for columnIndex in range(0, w, 2):
+        column = mask[:, columnIndex]
+        row = np.nonzero(column)[0]
 
-        if findPixel(mask, c, 56, 80, 4):
-            continue
-
-        if findPixel(mask, c, 81, 226, 15):
-            continue
+        if not row.size == 0:
+            distance(row[0])
+            drawLine(row[0], columnIndex)
 
     drawReferenceLines()
     cv2.imshow("image", grayImg)
