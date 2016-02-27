@@ -39,8 +39,10 @@ def drawReferenceLines():
     # 30cm
     cv2.line(mask, (0, 55), (w, 55), (128))
 
+
 def drawLine(row, column):
     cv2.line(mask, (column, row), (column, h), (255))
+
 
 def findPixel(mask, column, start, end, step):
     for r in range(start, end, step):
@@ -56,14 +58,14 @@ def findPixel(mask, column, start, end, step):
 
 
 # capture frames from the camera
+mapx, mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w, h), 5)
+
+e1 = cv2.getTickCount()
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
     e1 = cv2.getTickCount()
-
-    #Improve performance
-    image = cv2.undistort(frame.array, mtx, dist, None, newcameramtx)
-
+    # Improve performance
+    image = cv2.remap(frame.array, mapx, mapy, cv2.INTER_LINEAR)
     grayImg = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
     mask = cv2.threshold(grayImg, 160, 255, cv2.THRESH_BINARY)[1]
 
     for c in range(0, w, 10):
