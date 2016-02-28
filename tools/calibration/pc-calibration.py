@@ -16,7 +16,7 @@ object_points = []
 image_points = []
 h, w = 0, 0
 
-images = glob.glob('calibration/*.png')
+images = glob.glob('images/*.png')
 
 for file_name in images:
     image = cv2.imread(file_name)
