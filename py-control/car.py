@@ -30,12 +30,12 @@ class Car:
     def forward(self, speed = 0.5):
         wiringpi2.digitalWrite(self.drivePin1, 1)
         wiringpi2.digitalWrite(self.drivePin2, 0)
-        wiringpi2.softPwmWrite(self.drivePWMPin, speed * self.maxPwm)
+        wiringpi2.softPwmWrite(self.drivePWMPin, int(speed * self.maxPwm))
 
     def backward(self, speed = 0.5):
         wiringpi2.digitalWrite(self.drivePin1, 0)
         wiringpi2.digitalWrite(self.drivePin2, 1)
-        wiringpi2.softPwmWrite(self.drivePWMPin, speed * self.maxPwm)
+        wiringpi2.softPwmWrite(self.drivePWMPin, int(speed * self.maxPwm))
 
     def pause(self):
         wiringpi2.digitalWrite(self.drivePin1, 0)

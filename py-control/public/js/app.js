@@ -24,7 +24,7 @@ app.controller("carController", function ($scope, $window) {
         sock.send("right");
     };
 
-    var sock = new SockJS($window.location.hostname + ":9999/echo");
+    var sock = new SockJS($window.location.hostname + ":3000/echo");
     sock.onopen = function () {
         console.log('open');
     };
