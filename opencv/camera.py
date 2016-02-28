@@ -47,15 +47,14 @@ def drawLine(row, column):
 # capture frames from the camera
 mapx, mapy = cv2.initUndistortRectifyMap(mtx, dist, None, newcameramtx, (w, h), 5)
 
-e1 = cv2.getTickCount()
+last = cv2.getTickCount()
 for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-    e1 = cv2.getTickCount()
     # Improve performance
     image = cv2.remap(frame.array, mapx, mapy, cv2.INTER_LINEAR)
     grayImg = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     mask = cv2.threshold(grayImg, 160, 255, cv2.THRESH_BINARY)[1]
 
-    for columnIndex in range(0, w, 2):
+    for columnIndex in range(0, w, 4):
         column = mask[:, columnIndex]
         row = np.nonzero(column)[0]
 
@@ -67,9 +66,10 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
     cv2.imshow("image", grayImg)
     cv2.imshow('mask', mask)
 
-    e2 = cv2.getTickCount()
-    time = (e2 - e1) / cv2.getTickFrequency()
-    print(time)
+    timeSpend = cv2.getTickCount() - last
+    last = cv2.getTickCount()
+    time = timeSpend / cv2.getTickFrequency()
+    print(time, 1 / time)
 
     key = cv2.waitKey(1) & 0xFF
 
