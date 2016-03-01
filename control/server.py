@@ -1,11 +1,16 @@
 import tornado.ioloop
 import tornado.web
+from threading import Thread
 from sockjs.tornado import SockJSRouter, SockJSConnection
-
 from car import Car
+import json
+
+from sensors.RangeFinder import rangefinder
 
 car = Car()
 
+finder = rangefinder.RangeFinder()
+finder.start()
 
 class EchoConnection(SockJSConnection):
     actions = {
@@ -21,7 +26,13 @@ class EchoConnection(SockJSConnection):
             self.actions[msg]()
 
     def on_open(self, info):
-        print(info)
+        Thread(target=self.update, args=()).start()
+
+    def update(self):
+        while True:
+            self.send(json.dumps(finder.values))
+            import time
+            time.sleep(0.1)
 
 if __name__ == "__main__":
     EchoRouter = SockJSRouter(EchoConnection, '/echo')
