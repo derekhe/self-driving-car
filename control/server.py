@@ -1,11 +1,12 @@
+import json
+from threading import Thread
+
 import tornado.ioloop
 import tornado.web
-from threading import Thread
 from sockjs.tornado import SockJSRouter, SockJSConnection
-from car import Car
-import json
 
-from sensors.RangeFinder import rangefinder
+from controller.car import Car
+from sensors import rangefinder
 
 car = Car()
 
