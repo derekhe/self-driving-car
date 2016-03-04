@@ -8,8 +8,11 @@
     <script src="/app/node_modules/angular/angular.min.js"></script>
     <script src="//cdn.jsdelivr.net/sockjs/1.0.3/sockjs.min.js"></script>
     <script src='/app/node_modules/fastclick/lib/fastclick.js'></script>
+    <script src='/app/libs/fabric.js-1.6.0-rc.1/dist/fabric.min.js'></script>
     <script src="/app/js/app.js"></script>
     <link rel="stylesheet" href="/app/node_modules/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
 <div class="container" ng-controller="carController" ng-keypress="keydown($event)">
@@ -18,7 +21,7 @@
     </p>
 
     <p>
-        Speed Sensor: {{speed | number:1}}mm/s  Total distance: {{distance | number: 1}}m
+        Speed Sensor: {{speed | number:1}}mm/s Total distance: {{distance | number: 1}}m
     </p>
 
     <p>
@@ -74,6 +77,8 @@
         </tr>
         </tbody>
     </table>
+
+    <canvas id="c"></canvas>
 </div>
 </body>
 </html>

@@ -1,5 +1,9 @@
 var app = angular.module("app", []);
-app.controller("carController", function ($scope, $window) {
+app.controller("carController", function ($scope, $window, $interval) {
+    var canvas = new fabric.StaticCanvas('c');
+    var size = 500;
+    canvas.setDimensions({width: size, height: size});
+
     $scope.forward = function () {
         sock.send("forward");
     };
@@ -29,6 +33,8 @@ app.controller("carController", function ($scope, $window) {
         console.log('open');
     };
 
+    var rangefinder = [];
+
     sock.onmessage = function (e) {
         var data = JSON.parse(e.data);
         switch (data.type) {
@@ -45,12 +51,51 @@ app.controller("carController", function ($scope, $window) {
             case "acc":
                 $scope.acc = data.value;
                 break;
+            case "rangefinder":
+                rangefinder = data.value;
         }
         $scope.$digest();
     };
-    sock.onclose = function () {
-        console.log('close');
-    };
+
+    var maxDist = 100;
+    var widthPixels = 320;
+    $interval(function () {
+        canvas.clear();
+
+        var middle = size / 2;
+        var angle = Math.tan(25 / 180 * Math.PI);
+        canvas.add(new fabric.Line([middle, size, middle + size * angle, 0], {
+                stroke: 'red'
+            }
+        ));
+
+        canvas.add(new fabric.Line([middle, size, middle - size * angle, 0], {
+                stroke: 'red'
+            }
+        ));
+
+        function getYPixels(dist) {
+            return (dist / maxDist * size);
+        }
+
+        function getXPixes(column, distYPixels) {
+            return middle + (2 * column / widthPixels - 1 ) * distYPixels * angle;
+        }
+
+        rangefinder.forEach(function (data) {
+            var distYPixels = getYPixels(data[1]);
+            var distXPixels = getXPixes(data[0], distYPixels);
+            var rangeY = size - distYPixels;
+
+            //canvas.add(new fabric.Line([middle, size, distXPixels, rangeY], {
+            //    stroke: '#DDD'
+            //}));
+
+            canvas.add(new fabric.Circle({
+                radius: 3, fill: 'green', left: distXPixels, top: rangeY
+            }))
+        })
+    }, 50);
 
     var lastKeycode;
     $window.onkeydown = function (e) {
@@ -89,20 +134,20 @@ app.controller("carController", function ($scope, $window) {
 
         lastKeycode = null;
     };
-}).directive('myTouchstart', [function() {
-    return function(scope, element, attr) {
+}).directive('myTouchstart', [function () {
+    return function (scope, element, attr) {
 
-        element.on('touchstart', function(event) {
-            scope.$apply(function() {
+        element.on('touchstart', function (event) {
+            scope.$apply(function () {
                 scope.$eval(attr.myTouchstart);
             });
         });
     };
-}]).directive('myTouchend', [function() {
-    return function(scope, element, attr) {
+}]).directive('myTouchend', [function () {
+    return function (scope, element, attr) {
 
-        element.on('touchend', function(event) {
-            scope.$apply(function() {
+        element.on('touchend', function (event) {
+            scope.$apply(function () {
                 scope.$eval(attr.myTouchend);
             });
         });

@@ -9,6 +9,7 @@ from picamera.array import PiRGBArray
 w = 320
 h = 240
 
+
 class CameraThread:
     def __init__(self, w, h):
         self.camera = PiCamera()
@@ -60,20 +61,20 @@ class RangeFinder:
     def start(self):
         Thread(target=self.update, args=()).start()
 
-    def update(self, DEBUG=False):
+    def update(self, DEBUG=False, ShowPerformance = False):
         def distance(pixel):
             return 84134.5 - 0.0390032 * pixel - 53553.8 * np.arctan(pixel ** 2)
 
         def drawReferenceLines():
             # 90cm
-            cv2.line(mask, (0, 26), (w, 26), (255))
+            cv2.line(outputImg, (0, 26), (w, 26), (255))
             # 60cm
-            cv2.line(mask, (0, 33), (w, 33), (180))
+            cv2.line(outputImg, (0, 33), (w, 33), (180))
             # 30cm
-            cv2.line(mask, (0, 55), (w, 55), (128))
+            cv2.line(outputImg, (0, 55), (w, 55), (128))
 
         def drawLine(row, column):
-            cv2.line(mask, (column, row), (column, h), (255))
+            cv2.line(outputImg, (column, row), (column, h), (255))
 
         last = cv2.getTickCount()
 
@@ -85,34 +86,39 @@ class RangeFinder:
                 continue
 
             grayImg = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            mask = cv2.threshold(grayImg, 160, 255, cv2.THRESH_BINARY)[1]
+            outputImg = cv2.threshold(grayImg, 160, 255, cv2.THRESH_BINARY)[1]
 
-            self.values = []
+            values = []
             for columnIndex in range(0, w, 4):
-                column = mask[:, columnIndex]
+                column = outputImg[:, columnIndex]
                 row = np.nonzero(column)[0]
 
                 if not row.size == 0:
-                    self.values.append((columnIndex, distance(row[0])))
+                    values.append((columnIndex, distance(row[0])))
 
                     if DEBUG:
                         drawLine(row[0], columnIndex)
 
+                else:
+                    values.append((columnIndex, 300))
+
+            self.values = values
             if DEBUG:
                 drawReferenceLines()
 
                 cv2.imshow("image", grayImg)
-                cv2.imshow('mask', mask)
+                cv2.imshow('outputImg', outputImg)
+                cv2.waitKey(1)
 
+            if ShowPerformance:
                 timeSpend = cv2.getTickCount() - last
                 last = cv2.getTickCount()
                 timeSec = timeSpend / cv2.getTickFrequency()
                 print(timeSec, 1 / timeSec)
-                cv2.waitKey(1)
 
     def getValues(self):
         return self.values
 
 if __name__ == "__main__":
     rangeFinder = RangeFinder()
-    rangeFinder.update(DEBUG=True)
+    rangeFinder.update(DEBUG=True, ShowPerformance=True)

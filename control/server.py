@@ -13,6 +13,7 @@ car = Car()
 finder = rangefinder.RangeFinder()
 finder.start()
 
+
 class EchoConnection(SockJSConnection):
     actions = {
         "forward": car.forward,
@@ -31,9 +32,10 @@ class EchoConnection(SockJSConnection):
 
     def update(self):
         while True:
-            self.send(json.dumps(finder.values))
+            self.send(json.dumps({"type": "rangefinder", "value": finder.values}))
             import time
             time.sleep(0.1)
+
 
 if __name__ == "__main__":
     EchoRouter = SockJSRouter(EchoConnection, '/echo')
