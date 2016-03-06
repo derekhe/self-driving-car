@@ -94,7 +94,7 @@ class LSM303DLHC:
         self.bus.write_byte_data(self.mag, self.LSM303_REGISTER_MAG_CRB_REG_M, gain)
 
     def calcTiltHeading(self):
-        fNormAcc = math.sqrt(math.sum(i * i for i in self.a))
+        fNormAcc = math.sqrt(math.fsum(i * i for i in self.a))
         fSinRoll = self.a[1] / fNormAcc
         fCosRoll = math.sqrt(1.0 - (fSinRoll * fSinRoll))
         fSinPitch = self.a[0] / fNormAcc

@@ -6,13 +6,15 @@ import tornado.web
 from sockjs.tornado import SockJSRouter, SockJSConnection
 
 from controller.car import Car
-from sensors import rangefinder
+from sensors import rangefinder, LSM303, speedSensor
 
 car = Car()
 
 finder = rangefinder.RangeFinder()
 finder.start()
 
+lsm303 = LSM303.LSM303DLHC()
+speed = speedSensor.SpeedSensor()
 
 class EchoConnection(SockJSConnection):
     actions = {
@@ -33,6 +35,9 @@ class EchoConnection(SockJSConnection):
     def update(self):
         while True:
             self.send(json.dumps({"type": "rangefinder", "value": finder.values}))
+            self.send(json.dumps({"type": "mag", "value": lsm303.read()[0:3]}))
+            self.send(json.dumps({"type": "acc", "value": lsm303.read()[3:]}))
+            self.send(json.dumps({"type": "speed", "value": { "speed": speed.speed(), "distance": speed.distance()}}))
             import time
             time.sleep(0.1)
 
