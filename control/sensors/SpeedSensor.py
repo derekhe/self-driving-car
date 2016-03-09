@@ -9,7 +9,6 @@ class SpeedSensorThread(Thread):
     
     def __init__(self):
         super().__init__()
-        wiringpi2.wiringPiSetupGpio()
 
         self.speed = 0
         self.distance = 0
@@ -53,15 +52,16 @@ class SpeedSensor:
         self.thread = thread
 
     def speed(self):
-        return self.thread.speed
+        return self.thread.getSpeed()
 
     def distance(self):
-        return self.thread.distance
+        return self.thread.getDistance()
 
 if __name__ == '__main__':
 
     from time import sleep
 
+    wiringpi2.wiringPiSetupGpio()
     speedSensor = SpeedSensor()
 
     while True:
