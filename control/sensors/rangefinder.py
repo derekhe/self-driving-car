@@ -1,4 +1,5 @@
 import time
+from multiprocessing import Process, Queue
 from threading import Thread
 
 import cv2
@@ -9,9 +10,15 @@ from picamera.array import PiRGBArray
 w = 320
 h = 240
 
+q = Queue(3)
 
 class CameraThread:
-    def __init__(self, w, h):
+    def start(self):
+        self.p = Process(target=self.update, args=(q,))
+        self.p.start()
+        return self
+
+    def update(self, queue):
         self.camera = PiCamera()
         self.image = None
         self.camera.resolution = (w, h)
@@ -32,14 +39,12 @@ class CameraThread:
         self.stream = self.camera.capture_continuous(self.rawCapture, format="bgr", use_video_port=True)
         self.stopped = False
 
-    def start(self):
-        Thread(target=self.update, args=()).start()
-        return self
-
-    def update(self):
         for f in self.stream:
             self.image = cv2.remap(f.array, self.mapx, self.mapy, cv2.INTER_LINEAR)
             self.rawCapture.truncate(0)
+
+            if not q.full():
+                queue.put(self.image, False)
 
             if self.stopped:
                 self.stream.close()
@@ -47,21 +52,18 @@ class CameraThread:
                 self.camera.close()
                 return
 
-    def read(self):
-        return self.image
-
     def stop(self):
         self.stopped = True
 
 
 class RangeFinder:
-    cameraThread = CameraThread(w=320, h=240)
+    cameraThread = CameraThread()
     cameraThread.start()
 
     def start(self):
         Thread(target=self.update, args=()).start()
 
-    def update(self, DEBUG=False, ShowPerformance = False):
+    def update(self, DEBUG=False, ShowPerformance=False):
         def distance(pixel):
             return 84134.5 - 0.0390032 * pixel - 53553.8 * np.arctan(pixel ** 2)
 
@@ -79,7 +81,7 @@ class RangeFinder:
         last = cv2.getTickCount()
 
         while True:
-            image = self.cameraThread.read()
+            image = q.get()
 
             if image is None:
                 time.sleep(0.1)
@@ -89,7 +91,7 @@ class RangeFinder:
             outputImg = cv2.threshold(grayImg, 160, 255, cv2.THRESH_BINARY)[1]
 
             values = []
-            for columnIndex in range(0, w, 4):
+            for columnIndex in range(0, w, 2):
                 column = outputImg[:, columnIndex]
                 row = np.nonzero(column)[0]
 
@@ -119,6 +121,7 @@ class RangeFinder:
     def getValues(self):
         return self.values
 
+
 if __name__ == "__main__":
     rangeFinder = RangeFinder()
-    rangeFinder.update(DEBUG=True, ShowPerformance=True)
+    rangeFinder.update(DEBUG=False, ShowPerformance=True)
