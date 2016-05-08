@@ -17,7 +17,6 @@
 package april1985.com.legobtcontrol;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -43,14 +42,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 import com.example.bluetooth.le.R;
 
 import java.util.ArrayList;
 
-/**
- * Activity for scanning and displaying available Bluetooth LE devices.
- */
 public class DeviceScanActivity extends ListActivity {
     private static final String TAG = "DeviceScan";
     private LeDeviceListAdapter mLeDeviceListAdapter;
@@ -186,27 +181,14 @@ public class DeviceScanActivity extends ListActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        // Ensures Bluetooth is enabled on the device.  If Bluetooth is not currently enabled,
-        // fire an intent to display a dialog asking the user to grant permission to enable it.
-        /*
-        if (!mBluetoothAdapter.isEnabled()) {
-            if (!mBluetoothAdapter.isEnabled()) {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            }
-        }
-        */
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         scanLeDevice(false);
-        //mLeDeviceListAdapter.clear();
     }
 
-    //锟斤拷锟斤拷锟接斤拷锟斤拷
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         final BluetoothDevice device = mLeDeviceListAdapter.getDevice(position);
@@ -236,7 +218,6 @@ public class DeviceScanActivity extends ListActivity {
             }, SCAN_PERIOD);
 
             mScanning = true;
-            //F000E0FF-0451-4000-B000-000000000000
             mLeDeviceListAdapter.clear();
             mHandler.sendEmptyMessage(1);
             mBluetoothAdapter.startLeScan(mLeScanCallback);
@@ -245,29 +226,6 @@ public class DeviceScanActivity extends ListActivity {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
         }
         invalidateOptionsMenu();
-    }
-
-    private static char findHex(byte b) {
-        int t = new Byte(b).intValue();
-        t = t < 0 ? t + 16 : t;
-
-        if ((0 <= t) && (t <= 9)) {
-            return (char) (t + '0');
-        }
-
-        return (char) (t - 10 + 'A');
-    }
-
-    public static String ByteToString(byte[] bytes) {
-        StringBuffer sb = new StringBuffer();
-        //for (int i = 0; i < bytes.length && bytes[i] != (byte) 0; i++) {
-        for (int i = 0; i < bytes.length; i++) {
-            //sb.append((char) (bytes[i]));
-            sb.append(findHex((byte) ((bytes[i] & 0xf0) >> 4)));
-            sb.append(findHex((byte) (bytes[i] & 0x0f)));
-
-        }
-        return sb.toString();
     }
 
     // Adapter for holding devices found through scanning.
@@ -313,7 +271,7 @@ public class DeviceScanActivity extends ListActivity {
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
             ViewHolder viewHolder;
-            // General ListView optimization code.
+
             if (view == null) {
                 view = mInflator.inflate(R.layout.listitem_device, null);
                 viewHolder = new ViewHolder();

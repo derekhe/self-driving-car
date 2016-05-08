@@ -40,12 +40,6 @@ import android.widget.Toast;
 import com.example.bluetooth.le.R;
 
 
-/**
- * For a given BLE device, this Activity provides the user interface to connect, display data,
- * and display GATT services and characteristics supported by the device.  The Activity
- * communicates with {@code BluetoothLeService}, which in turn interacts with the
- * Bluetooth LE API.
- */
 public class DeviceControlActivity extends Activity {
     private final static String TAG = DeviceControlActivity.class.getSimpleName();
 
@@ -62,7 +56,6 @@ public class DeviceControlActivity extends Activity {
     ScrollView svResult;
     Button btnSend;
 
-    // Code to manage Service lifecycle.
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
         @Override
@@ -74,8 +67,7 @@ public class DeviceControlActivity extends Activity {
             }
 
             Log.e(TAG, "mBluetoothLeService is okay");
-            // Automatically connects to the device upon successful start-up initialization.
-            //mBluetoothLeService.connect(mDeviceAddress);
+            mBluetoothLeService.connect(mDeviceAddress);
         }
 
         @Override
@@ -131,7 +123,7 @@ public class DeviceControlActivity extends Activity {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {                                        //初始化
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gatt_services_characteristics);
 
@@ -142,7 +134,7 @@ public class DeviceControlActivity extends Activity {
         // Sets up UI references.
         mDataField = (TextView) findViewById(R.id.data_value);
         edtSend = (EditText) this.findViewById(R.id.edtSend);
-        edtSend.setText("www.jnhuamao.cn");
+        edtSend.setText("Test");
         svResult = (ScrollView) this.findViewById(R.id.svResult);
 
         btnSend = (Button) this.findViewById(R.id.btnSend);
@@ -160,11 +152,6 @@ public class DeviceControlActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        /*registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
-        if (mBluetoothLeService != null) {
-            final boolean result = mBluetoothLeService.connect(mDeviceAddress);
-            Log.d(TAG, "Connect request result=" + result);
-        }*/
     }
 
     @Override
@@ -177,8 +164,6 @@ public class DeviceControlActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //this.unregisterReceiver(mGattUpdateReceiver);
-        //unbindService(mServiceConnection);
         if (mBluetoothLeService != null) {
             mBluetoothLeService.close();
             mBluetoothLeService = null;
@@ -200,7 +185,7 @@ public class DeviceControlActivity extends Activity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {                              //点击按钮
+    public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_connect:
                 mBluetoothLeService.connect(mDeviceAddress);
