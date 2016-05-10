@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package april1985.com.legobtcontrol;
+package com.april1985.legobtcontrol;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
@@ -30,14 +30,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.bluetooth.le.R;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class DeviceControlActivity extends Activity {
@@ -46,15 +46,12 @@ public class DeviceControlActivity extends Activity {
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
 
-    private TextView mDataField;
     private String mDeviceName;
     private String mDeviceAddress;
     private BluetoothLeService mBluetoothLeService;
     private boolean mConnected = false;
-
-    EditText edtSend;
-    ScrollView svResult;
-    Button btnSend;
+    private TextView mData;
+    private Timer timer = new Timer();
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
@@ -91,36 +88,25 @@ public class DeviceControlActivity extends Activity {
             } else if (BluetoothLeService.ACTION_GATT_DISCONNECTED.equals(action)) { //断开连接
                 mConnected = false;
                 invalidateOptionsMenu();
-                btnSend.setEnabled(false);
-                clearUI();
             } else if (BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) //可以开始干活了
             {
                 mConnected = true;
-                mDataField.setText("");
                 ShowDialog();
-                btnSend.setEnabled(true);
                 Log.e(TAG, "In what we need");
                 invalidateOptionsMenu();
             } else if (BluetoothLeService.ACTION_DATA_AVAILABLE.equals(action)) { //收到数据
                 Log.e(TAG, "RECV DATA");
                 String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                if (data != null) {
-                    if (mDataField.length() > 500)
-                        mDataField.setText("");
-                    mDataField.append(data);
-                    svResult.post(new Runnable() {
-                        public void run() {
-                            svResult.fullScroll(ScrollView.FOCUS_DOWN);
-                        }
-                    });
-                }
+                mData.setText(data);
             }
         }
     };
-
-    private void clearUI() {
-        mDataField.setText(R.string.no_data);
-    }
+    private Button btnForward;
+    private Button btnBackward;
+    private Button btnLeft;
+    private Button btnRight;
+    private Button btnStraight;
+    private Button btnPause;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -131,22 +117,37 @@ public class DeviceControlActivity extends Activity {
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
 
-        // Sets up UI references.
-        mDataField = (TextView) findViewById(R.id.data_value);
-        edtSend = (EditText) this.findViewById(R.id.edtSend);
-        edtSend.setText("Test");
-        svResult = (ScrollView) this.findViewById(R.id.svResult);
-
-        btnSend = (Button) this.findViewById(R.id.btnSend);
-        btnSend.setOnClickListener(new ClickEvent());
-        btnSend.setEnabled(false);
-
         getActionBar().setTitle(mDeviceName);
         getActionBar().setDisplayHomeAsUpEnabled(true);
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         Log.d(TAG, "Try to bindService=" + bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE));
 
+        btnForward = (Button) findViewById(R.id.btnForward);
+        btnBackward = (Button) findViewById(R.id.btnBackward);
+        btnLeft = (Button) findViewById(R.id.btnLeft);
+        btnRight = (Button) findViewById(R.id.btnRight);
+        btnStraight = (Button) findViewById(R.id.btnStraight);
+        btnPause = (Button) findViewById(R.id.btnPause);
+
+        setCommand(btnForward, "F 255");
+        setCommand(btnBackward, "B 255");
+        setCommand(btnLeft, "S 0");
+        setCommand(btnStraight, "S 90");
+        setCommand(btnRight, "S 180");
+        setCommand(btnPause, "P");
+
+        mData = (TextView) findViewById(R.id.data_value);
+
         registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+    }
+
+    private void setCommand(Button buton, final String command) {
+        buton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mBluetoothLeService.WriteValue(command + "\r");
+            }
+        });
     }
 
     @Override
@@ -177,6 +178,13 @@ public class DeviceControlActivity extends Activity {
         if (mConnected) {
             menu.findItem(R.id.menu_connect).setVisible(false);
             menu.findItem(R.id.menu_disconnect).setVisible(true);
+
+            timer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    mBluetoothLeService.WriteValue("@\r");
+                }
+            }, 0, 1000);
         } else {
             menu.findItem(R.id.menu_connect).setVisible(true);
             menu.findItem(R.id.menu_disconnect).setVisible(false);
@@ -206,28 +214,6 @@ public class DeviceControlActivity extends Activity {
 
     private void ShowDialog() {
         Toast.makeText(this, "连接成功，现在可以正常通信！", Toast.LENGTH_SHORT).show();
-    }
-
-    // 按钮事件
-    class ClickEvent implements View.OnClickListener {
-        @Override
-        public void onClick(View v) {
-            if (v == btnSend) {
-                if (!mConnected) return;
-
-                if (edtSend.length() < 1) {
-                    Toast.makeText(DeviceControlActivity.this, "请输入要发送的内容", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                mBluetoothLeService.WriteValue(edtSend.getText().toString());
-
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (imm.isActive())
-                    imm.hideSoftInputFromWindow(edtSend.getWindowToken(), 0);
-                //todo Send data
-            }
-        }
-
     }
 
     private static IntentFilter makeGattUpdateIntentFilter() {                        //注册接收的事件

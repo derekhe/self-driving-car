@@ -5,7 +5,7 @@ android {
     buildToolsVersion "24.0.0 rc3"
 
     defaultConfig {
-        applicationId "april1985.com.legobtcontrol"
+        applicationId "com.april1985.legobtcontrol"
         minSdkVersion 19
         targetSdkVersion 23
         versionCode 1

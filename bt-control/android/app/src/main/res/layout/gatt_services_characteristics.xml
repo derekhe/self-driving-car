@@ -18,41 +18,83 @@
   android:orientation="vertical"
   android:layout_width="fill_parent"
   android:layout_height="fill_parent"
-  android:background="#FFFFFFFF">
-		<ScrollView android:id="@+id/svResult"
-		android:layout_width="fill_parent"
-		android:layout_height="fill_parent"
-		android:layout_weight="1.0"
-		android:background="#FFFFFFFF"> 
+  android:background="#FFFFFFFF"
+	android:weightSum="1">
 
-        <TextView
-            android:focusable="true"
-			android:focusableInTouchMode="true"
-            android:id="@+id/data_value"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:text="@string/no_data"
-            android:textSize="16sp"/>
+	<TextView
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:id="@+id/data_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_data"
+        android:textSize="16sp"/>
 
-		</ScrollView>
-    <TableLayout android:id="@+id/TableLayout02"
-		android:layout_width="fill_parent" 
-		android:layout_height="wrap_content"
-		android:layout_margin="0px"
-		android:stretchColumns="0"
-		android:layout_gravity="bottom">
-		<TableRow>
-			<EditText
-    			android:id="@+id/edtSend"     
-    			android:layout_width="fill_parent"    
-    			android:layout_height="wrap_content"
-    			android:layout_span="4"/>
-			<Button android:id="@+id/btnSend"
-				android:layout_height="wrap_content" 
-				android:layout_width="wrap_content"
-				android:text="@string/send"
-				android:layout_gravity="bottom">
-			</Button>
-		</TableRow>
-	</TableLayout>
+	<RelativeLayout
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:layout_gravity="center_horizontal">
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Left"
+			android:id="@+id/btnLeft"
+			android:layout_below="@+id/btnForward"
+			android:layout_alignParentStart="true"
+			android:minWidth="100dp"
+			android:layout_marginLeft="30dp" />
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Straight"
+			android:id="@+id/btnStraight"
+			android:layout_alignTop="@+id/btnLeft"
+			android:layout_toEndOf="@+id/btnLeft"
+			android:minWidth="100dp"
+			android:layout_marginLeft="30dp" />
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Right"
+			android:id="@+id/btnRight"
+			android:layout_alignTop="@+id/btnStraight"
+			android:layout_toEndOf="@+id/btnStraight"
+			android:minWidth="100dp"
+			android:layout_marginLeft="30dp" />
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Forward"
+			android:id="@+id/btnForward"
+			android:layout_alignParentTop="true"
+			android:layout_alignParentEnd="true"
+			android:layout_marginEnd="50dp"
+			android:layout_marginTop="26dp"
+			android:minWidth="100dp" />
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Pause"
+			android:id="@+id/btnPause"
+			android:layout_below="@+id/btnForward"
+			android:layout_alignStart="@+id/btnForward"
+			android:layout_marginTop="30dp"
+			android:minWidth="100dp" />
+
+		<Button
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="Backward"
+			android:id="@+id/btnBackward"
+			android:layout_below="@+id/btnPause"
+			android:layout_alignStart="@+id/btnPause"
+			android:layout_marginTop="30dp"
+			android:minWidth="100dp" />
+	</RelativeLayout>
+
 </LinearLayout>

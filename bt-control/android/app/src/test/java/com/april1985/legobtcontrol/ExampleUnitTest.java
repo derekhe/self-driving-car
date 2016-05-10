@@ -1,4 +1,4 @@
-package april1985.com.legobtcontrol;
+package com.april1985.legobtcontrol;
 
 import org.junit.Test;
 

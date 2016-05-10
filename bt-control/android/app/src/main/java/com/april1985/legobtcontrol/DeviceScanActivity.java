@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package april1985.com.legobtcontrol;
+package com.april1985.legobtcontrol;
 
 import android.Manifest;
 import android.app.Activity;

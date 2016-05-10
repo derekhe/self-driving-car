@@ -79,7 +79,7 @@ void unrecognized() {
 }
 
 void setup() {
-  Serial.begin(57600);
+  Serial.begin(115200);
   pinMode(DRIVE_PIN1, OUTPUT);
   pinMode(DRIVE_PIN2, OUTPUT);
   pinMode(DRIVE_ENABLE_PIN, OUTPUT);
