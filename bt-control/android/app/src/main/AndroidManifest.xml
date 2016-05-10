@@ -47,8 +47,5 @@ limitations under the License.
             </intent-filter>
         </activity>
 
-        <service
-            android:name="com.april1985.legobtcontrol.BluetoothLeService"
-            android:enabled="true" />
     </application>
 </manifest>
