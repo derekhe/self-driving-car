@@ -25,7 +25,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -40,8 +39,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -95,6 +92,7 @@ public class DeviceControlActivity extends Activity {
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
                     Log.e("gattCallback", "STATE_DISCONNECTED");
+                    gatt.disconnect();
                     break;
                 default:
                     Log.e("gattCallback", "STATE_OTHER");
@@ -140,57 +138,17 @@ public class DeviceControlActivity extends Activity {
             Log.i("onCharacteristicRead", data);
             mData.setText(data);
         }
-
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt,
-                                            BluetoothGattCharacteristic characteristic) {
-            Log.e(TAG, "OnCharacteristicWrite");
-        }
-
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic,
-                                          int status) {
-            Log.e(TAG, "OnCharacteristicWrite");
-        }
-
-        @Override
-        public void onDescriptorRead(BluetoothGatt gatt,
-                                     BluetoothGattDescriptor bd,
-                                     int status) {
-            Log.e(TAG, "onDescriptorRead");
-        }
-
-        @Override
-        public void onDescriptorWrite(BluetoothGatt gatt,
-                                      BluetoothGattDescriptor bd,
-                                      int status) {
-            Log.e(TAG, "onDescriptorWrite");
-        }
-
-        @Override
-        public void onReadRemoteRssi(BluetoothGatt gatt, int a, int b) {
-            Log.e(TAG, "onReadRemoteRssi");
-        }
-
-        @Override
-        public void onReliableWriteCompleted(BluetoothGatt gatt, int a) {
-            Log.e(TAG, "onReliableWriteCompleted");
-        }
     };
+
     private ScanCallback mScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             Log.i("callbackType", String.valueOf(callbackType));
             Log.i("result", result.toString());
             BluetoothDevice btDevice = result.getDevice();
-            connectToDevice(btDevice);
-        }
 
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            for (ScanResult sr : results) {
-                Log.i("ScanResult - Results", sr.toString());
-            }
+            mGatt = btDevice.connectGatt(DeviceControlActivity.this, true, gattCallback);
+            mLEScanner.stopScan(mScanCallback);
         }
 
         @Override
@@ -248,6 +206,7 @@ public class DeviceControlActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mGatt.disconnect();
         Log.d(TAG, "We are in destroy");
     }
 
@@ -261,6 +220,7 @@ public class DeviceControlActivity extends Activity {
             menu.findItem(R.id.menu_connect).setVisible(true);
             menu.findItem(R.id.menu_disconnect).setVisible(false);
         }
+
         return true;
     }
 
@@ -269,9 +229,12 @@ public class DeviceControlActivity extends Activity {
         switch (item.getItemId()) {
             case R.id.menu_connect:
                 searchDevice();
+                invalidateOptionsMenu();
                 return true;
             case R.id.menu_disconnect:
                 mGatt.disconnect();
+                mConnected = false;
+                invalidateOptionsMenu();
                 return true;
             case android.R.id.home:
                 if (mConnected) {
@@ -279,6 +242,7 @@ public class DeviceControlActivity extends Activity {
                     mConnected = false;
                 }
                 onBackPressed();
+                invalidateOptionsMenu();
                 return true;
         }
 
@@ -313,12 +277,14 @@ public class DeviceControlActivity extends Activity {
                 .build();
         filters = new ArrayList<>();
 
+        mLEScanner.stopScan(mScanCallback);
+
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (mScanning) {
                     mScanning = false;
-                    mLEScanner.startScan(filters, settings, mScanCallback);
+                    mLEScanner.stopScan(mScanCallback);
                     invalidateOptionsMenu();
                 }
             }
@@ -328,13 +294,6 @@ public class DeviceControlActivity extends Activity {
         mLEScanner.startScan(filters, settings, mScanCallback);
 
         invalidateOptionsMenu();
-    }
-
-    public void connectToDevice(BluetoothDevice device) {
-        if (mGatt == null) {
-            mGatt = device.connectGatt(this, true, gattCallback);
-            mLEScanner.stopScan(mScanCallback);
-        }
     }
 
     private void requestPermission() {
