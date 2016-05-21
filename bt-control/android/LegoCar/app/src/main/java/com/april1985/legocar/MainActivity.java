@@ -33,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
 
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
-        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
     }
 
     private IntentFilter makeGattUpdateIntentFilter() {
@@ -125,4 +124,29 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mServiceConnection);
+        mBluetoothLeService = null;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mGattUpdateReceiver);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+
+        if (mBluetoothLeService != null) {
+            mBluetoothLeService.disconnect();
+            mBluetoothLeService.scanAndConnect();
+        }
+
+    }
 }
