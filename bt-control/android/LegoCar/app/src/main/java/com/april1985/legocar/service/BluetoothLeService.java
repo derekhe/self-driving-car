@@ -59,7 +59,8 @@ public class BluetoothLeService extends Service {
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothGatt mBluetoothGatt;
-
+    private Handler mHandler = new Handler();
+    private BluetoothListener btListener;
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -112,7 +113,18 @@ public class BluetoothLeService extends Service {
             Log.e(TAG, "OnCharacteristicWrite");
         }
     };
-    private Handler mHandler = new Handler();
+    private BluetoothAdapter.LeScanCallback mLeScanCallback =
+            new BluetoothAdapter.LeScanCallback() {
+
+                @Override
+                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                    if ("LEGO".equals(device.getName())) {
+                        stopScan();
+                        connect(device.getAddress());
+                        broadcastUpdate(ACTION_DEVICE_FOUND);
+                    }
+                }
+            };
 
     public BluetoothListener getBtListener() {
         return btListener;
@@ -121,8 +133,6 @@ public class BluetoothLeService extends Service {
     public void setBtListener(BluetoothListener btListener) {
         this.btListener = btListener;
     }
-
-    private BluetoothListener btListener;
 
     public void findService(List<BluetoothGattService> gattServices) {
         Log.i(TAG, "Count is:" + gattServices.size());
@@ -154,6 +164,21 @@ public class BluetoothLeService extends Service {
         sendBroadcast(intent);
     }
 
+    /**
+     * Enables or disables notification on a give characteristic.
+     *
+     * @param characteristic Characteristic to act on.
+     * @param enabled        If true, enable notification.  False otherwise.
+     */
+    public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
+                                              boolean enabled) {
+        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+            Log.w(TAG, "BluetoothAdapter not initialized");
+            return;
+        }
+        mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
+    }
+
     private void dataReceived(final BluetoothGattCharacteristic characteristic) {
         String received = new String(characteristic.getValue());
         if (btListener != null) {
@@ -173,6 +198,18 @@ public class BluetoothLeService extends Service {
         // invoked when the UI is disconnected from the Service.
         close();
         return super.onUnbind(intent);
+    }
+
+    /**
+     * After using a given BLE device, the app must call this method to ensure resources are
+     * released properly.
+     */
+    public void close() {
+        if (mBluetoothGatt == null) {
+            return;
+        }
+        mBluetoothGatt.close();
+        mBluetoothGatt = null;
     }
 
     /**
@@ -246,18 +283,6 @@ public class BluetoothLeService extends Service {
     }
 
     /**
-     * After using a given BLE device, the app must call this method to ensure resources are
-     * released properly.
-     */
-    public void close() {
-        if (mBluetoothGatt == null) {
-            return;
-        }
-        mBluetoothGatt.close();
-        mBluetoothGatt = null;
-    }
-
-    /**
      * Request a read on a given {@code BluetoothGattCharacteristic}. The read result is reported
      * asynchronously through the {@code BluetoothGattCallback#onCharacteristicRead(android.bluetooth.BluetoothGatt, android.bluetooth.BluetoothGattCharacteristic, int)}
      * callback.
@@ -272,32 +297,12 @@ public class BluetoothLeService extends Service {
         mBluetoothGatt.readCharacteristic(characteristic);
     }
 
-    /**
-     * Enables or disables notification on a give characteristic.
-     *
-     * @param characteristic Characteristic to act on.
-     * @param enabled        If true, enable notification.  False otherwise.
-     */
-    public void setCharacteristicNotification(BluetoothGattCharacteristic characteristic,
-                                              boolean enabled) {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized");
-            return;
-        }
-        mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
-    }
-
     public void write(String command) {
+        Log.e(TAG, "write " + command);
         command += "\r";
-        mNotifyCharacteristic.setValue(command.getBytes());
-        if (mBluetoothGatt != null) {
+        if (mBluetoothGatt != null && mNotifyCharacteristic != null) {
+            mNotifyCharacteristic.setValue(command.getBytes());
             mBluetoothGatt.writeCharacteristic(mNotifyCharacteristic);
-        }
-    }
-
-    public class LocalBinder extends Binder {
-        public BluetoothLeService getService() {
-            return BluetoothLeService.this;
         }
     }
 
@@ -313,21 +318,14 @@ public class BluetoothLeService extends Service {
         mBluetoothAdapter.startLeScan(mLeScanCallback);
     }
 
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-
-                @Override
-                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    if ("LEGO".equals(device.getName())) {
-                        stopScan();
-                        connect(device.getAddress());
-                        broadcastUpdate(ACTION_DEVICE_FOUND);
-                    }
-                }
-            };
-
     private void stopScan() {
         mBluetoothAdapter.stopLeScan(mLeScanCallback);
         broadcastUpdate(ACTION_SEARCH_STOP);
+    }
+
+    public class LocalBinder extends Binder {
+        public BluetoothLeService getService() {
+            return BluetoothLeService.this;
+        }
     }
 }

@@ -9,39 +9,18 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class LegoCar implements BluetoothListener {
+    private final int MAX_VOLTAGE = 8;
     private BluetoothLeService btService;
     private String TAG = LegoCar.class.getSimpleName();
     private CarStatusChangeListener carStatusListener;
-    private final int MAX_VOLTAGE = 8;
     private int MIN_VOLTAGE = 6;
-
-    public LegoCar(BluetoothLeService btService) {
-        this.btService = btService;
-    }
-
     private Timer pingTimer;
     private boolean pingReplied = false;
     private boolean deviceAlive = false;
     private float voltage = MAX_VOLTAGE;
 
-    private void startPing() {
-        pingTimer = new Timer();
-        pingTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                deviceAlive = pingReplied;
-                pingReplied = false;
-                if (carStatusListener != null) carStatusListener.onStatusUpdated();
-                btService.write("@");
-                btService.write("V");
-            }
-        }, 0, 500);
-    }
-
-    private void stopPing() {
-        pingTimer.cancel();
-        pingTimer.purge();
-        pingTimer = null;
+    public LegoCar(BluetoothLeService btService) {
+        this.btService = btService;
     }
 
     @Override
@@ -52,6 +31,12 @@ public class LegoCar implements BluetoothListener {
     @Override
     public void onDisconnected() {
         stopPing();
+    }
+
+    private void stopPing() {
+        pingTimer.cancel();
+        pingTimer.purge();
+        pingTimer = null;
     }
 
     @Override
@@ -72,6 +57,20 @@ public class LegoCar implements BluetoothListener {
         if (carStatusListener != null) carStatusListener.onStatusUpdated();
     }
 
+    private void startPing() {
+        pingTimer = new Timer();
+        pingTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                deviceAlive = pingReplied;
+                pingReplied = false;
+                if (carStatusListener != null) carStatusListener.onStatusUpdated();
+                btService.write("@");
+                btService.write("V");
+            }
+        }, 0, 500);
+    }
+
     public boolean isAlive() {
         return deviceAlive;
     }
@@ -80,11 +79,32 @@ public class LegoCar implements BluetoothListener {
         this.carStatusListener = carStatusListener;
     }
 
+    public int getVoltagePercent() {
+        return (int) ((getVoltage() - MIN_VOLTAGE) / (MAX_VOLTAGE - MIN_VOLTAGE) * 100);
+    }
+
     public float getVoltage() {
         return voltage;
     }
 
-    public int getVoltagePercent() {
-        return (int) ((getVoltage() - MIN_VOLTAGE) / (MAX_VOLTAGE - MIN_VOLTAGE) * 100);
+    public void steer(int angle) {
+        if (btService == null) return;
+        angle = Math.abs(angle);
+        btService.write("S " + angle);
+    }
+
+    public void throttle(float value) {
+        if (btService == null) return;
+        int throttle = (int) (Math.abs(value * 255));
+        if (value > 0) {
+            btService.write("F " + throttle);
+        } else {
+            btService.write("B " + throttle);
+        }
+    }
+
+    public void release() {
+        if (btService == null) return;
+        btService.write("P");
     }
 }
