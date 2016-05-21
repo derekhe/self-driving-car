@@ -30,10 +30,12 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Service for managing connection and data communication with a GATT server hosted on a
@@ -55,7 +57,9 @@ public class BluetoothLeService extends Service {
     private static final long SCAN_PERIOD = 10000;
     private final static String TAG = BluetoothLeService.class.getSimpleName();
     private final IBinder mBinder = new LocalBinder();
+    private final int MAX_RETRY = 5;
     public BluetoothGattCharacteristic mNotifyCharacteristic;
+    ReentrantLock lock = new ReentrantLock();
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothGatt mBluetoothGatt;
@@ -110,7 +114,6 @@ public class BluetoothLeService extends Service {
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
             dataReceived(characteristic);
-            Log.e(TAG, "OnCharacteristicWrite");
         }
     };
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
@@ -298,12 +301,18 @@ public class BluetoothLeService extends Service {
     }
 
     public void write(String command) {
-        Log.e(TAG, "write " + command);
-        command += "\r";
+        lock.lock();
         if (mBluetoothGatt != null && mNotifyCharacteristic != null) {
-            mNotifyCharacteristic.setValue(command.getBytes());
-            mBluetoothGatt.writeCharacteristic(mNotifyCharacteristic);
+            for (int i = 0; i < MAX_RETRY; i++) {
+                mNotifyCharacteristic.setValue((command + '\r').getBytes());
+
+                boolean sendResult = mBluetoothGatt.writeCharacteristic(mNotifyCharacteristic);
+                Log.e(TAG, "write " + command + " " + sendResult);
+                if (sendResult) break;
+                SystemClock.sleep(10);
+            }
         }
+        lock.unlock();
     }
 
     public void scanAndConnect() {

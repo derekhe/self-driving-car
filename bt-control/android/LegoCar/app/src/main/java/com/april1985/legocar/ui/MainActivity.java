@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onUp() {
-                legoCar.release();
+                legoCar.throttle(0);
             }
 
             @Override
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onDrag(float degrees, float offset) {
-                legoCar.steer((int) (180 - degrees));
+                legoCar.steer((int) (180 - Math.abs(degrees)));
             }
 
             @Override

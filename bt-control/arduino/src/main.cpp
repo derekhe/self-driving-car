@@ -28,44 +28,39 @@ int readArgument(int defaultValue = 255){
   }
 }
 
-void forward() {
-  int speed = readArgument(255);
-  digitalWrite(DRIVE_PIN1, 1);
-  digitalWrite(DRIVE_PIN2, 0);
-  analogWrite(DRIVE_ENABLE_PIN, speed);
-  Serial.println("forward");
-  Serial.println(speed);
+void ping(){
+  Serial.println("@");
 }
 
-void backward() {
+void throttle() {
   int speed = readArgument(255);
-  digitalWrite(DRIVE_PIN1, 0);
-  digitalWrite(DRIVE_PIN2, 1);
-  analogWrite(DRIVE_ENABLE_PIN, speed);
-  Serial.println("backward");
-  Serial.println(speed);
+  if(speed == 0){
+    digitalWrite(DRIVE_PIN1, 0);
+    digitalWrite(DRIVE_PIN2, 0);
+  } else if (speed > 0){
+    digitalWrite(DRIVE_PIN1, 1);
+    digitalWrite(DRIVE_PIN2, 0);
+  }
+  else{
+    digitalWrite(DRIVE_PIN1, 0);
+    digitalWrite(DRIVE_PIN2, 1);
+  }
+
+  analogWrite(DRIVE_ENABLE_PIN, abs(speed));
+  ping();
 }
 
 void reset() {
   digitalWrite(DRIVE_PIN1, 0);
   digitalWrite(DRIVE_PIN2, 0);
   myservo.write(DEFAULT_STEER);
-  Serial.println("reset");
+  ping();
 }
 
 void steer() {
   int angle = readArgument(90);
   myservo.write(angle);
-  Serial.println("steer");
-}
-
-void ping(){
-  Serial.println("@");
-}
-
-void release(){
-  digitalWrite(DRIVE_PIN1, 0);
-  digitalWrite(DRIVE_PIN2, 0);
+  ping();
 }
 
 void voltage(){
@@ -75,7 +70,7 @@ void voltage(){
 }
 
 void unrecognized() {
-  Serial.println("Unknown command");
+  Serial.println("Unknown");
 }
 
 void setup() {
@@ -89,10 +84,8 @@ void setup() {
 
   Serial.println("Ready");
 
-  sCmd.addCommand("F", forward);
-  sCmd.addCommand("B", backward);
+  sCmd.addCommand("T", throttle);
   sCmd.addCommand("S", steer);
-  sCmd.addCommand("P", release);
   sCmd.addCommand("R", reset);
   sCmd.addCommand("@", ping);
   sCmd.addCommand("V", voltage);

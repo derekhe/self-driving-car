@@ -46,10 +46,9 @@ public class LegoCar implements BluetoothListener {
 
         for (String command : strings) {
             command = command.trim();
-            if (command.startsWith("@")) {
-                pingReplied = true;
-            } else if (command.startsWith("V")) {
+            if (command.startsWith("V")) {
                 voltage = Float.parseFloat(command.substring(1));
+                pingReplied = true;
             }
         }
 
@@ -65,10 +64,10 @@ public class LegoCar implements BluetoothListener {
                 deviceAlive = pingReplied;
                 pingReplied = false;
                 if (carStatusListener != null) carStatusListener.onStatusUpdated();
-                btService.write("@");
                 btService.write("V");
             }
-        }, 0, 500);
+        }, 0, 1000);
+
     }
 
     public boolean isAlive() {
@@ -95,16 +94,8 @@ public class LegoCar implements BluetoothListener {
 
     public void throttle(float value) {
         if (btService == null) return;
-        int throttle = (int) (Math.abs(value * 255));
-        if (value > 0) {
-            btService.write("F " + throttle);
-        } else {
-            btService.write("B " + throttle);
-        }
+        int throttle = (int) (value * 255);
+        btService.write("T " + throttle);
     }
 
-    public void release() {
-        if (btService == null) return;
-        btService.write("P");
-    }
 }
