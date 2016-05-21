@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.april1985.legocar;
+package com.april1985.legocar.service;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -44,7 +44,6 @@ public class BluetoothLeService extends Service {
     public final static String ACTION_DISCONNECTED = "com.april1985.legocar.ACTION_DISCONNECTED";
     public final static String ACTION_CONNECTED = "com.april1985.legocar.ACTION_CONNECTED";
     public final static String ACTION_DATA_AVAILABLE = "com.april1985.legocar.ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_DATA = "com.april1985.legocar.EXTRA_DATA";
     public final static String ACTION_SEARCH_STOP = "com.april1985.legocar.ACTION_SEARCH_STOP";
     public final static String ACTION_DEVICE_FOUND = "com.april1985.legocar.ACTION_DEVICE_FOUND";
 
@@ -77,6 +76,7 @@ public class BluetoothLeService extends Service {
                             mBluetoothGatt.discoverServices());
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                     intentAction = ACTION_DISCONNECTED;
+                    btListener.onDisconnected();
                     mBluetoothGatt.close();
                     mBluetoothGatt = null;
                     Log.i(TAG, "Disconnected from GATT server.");
@@ -101,23 +101,28 @@ public class BluetoothLeService extends Service {
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+                dataReceived(characteristic);
             }
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
-            broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+            dataReceived(characteristic);
             Log.e(TAG, "OnCharacteristicWrite");
         }
     };
     private Handler mHandler = new Handler();
 
-    public void WriteValue(String strValue) {
-        mNotifyCharacteristic.setValue(strValue.getBytes());
-        mBluetoothGatt.writeCharacteristic(mNotifyCharacteristic);
+    public BluetoothListener getBtListener() {
+        return btListener;
     }
+
+    public void setBtListener(BluetoothListener btListener) {
+        this.btListener = btListener;
+    }
+
+    private BluetoothListener btListener;
 
     public void findService(List<BluetoothGattService> gattServices) {
         Log.i(TAG, "Count is:" + gattServices.size());
@@ -136,6 +141,7 @@ public class BluetoothLeService extends Service {
                         mNotifyCharacteristic = gattCharacteristic;
                         setCharacteristicNotification(gattCharacteristic, true);
                         broadcastUpdate(ACTION_CONNECTED);
+                        btListener.onConnected();
                         return;
                     }
                 }
@@ -148,15 +154,11 @@ public class BluetoothLeService extends Service {
         sendBroadcast(intent);
     }
 
-    private void broadcastUpdate(final String action,
-                                 final BluetoothGattCharacteristic characteristic) {
-        final Intent intent = new Intent(action);
-
-        final byte[] data = characteristic.getValue();
-        if (data != null && data.length > 0) {
-            intent.putExtra(EXTRA_DATA, new String(data));
+    private void dataReceived(final BluetoothGattCharacteristic characteristic) {
+        String received = new String(characteristic.getValue());
+        if (btListener != null) {
+            btListener.onDataArrived(received);
         }
-        sendBroadcast(intent);
     }
 
     @Override
@@ -285,8 +287,16 @@ public class BluetoothLeService extends Service {
         mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
     }
 
+    public void write(String command) {
+        command += "\r";
+        mNotifyCharacteristic.setValue(command.getBytes());
+        if (mBluetoothGatt != null) {
+            mBluetoothGatt.writeCharacteristic(mNotifyCharacteristic);
+        }
+    }
+
     public class LocalBinder extends Binder {
-        BluetoothLeService getService() {
+        public BluetoothLeService getService() {
             return BluetoothLeService.this;
         }
     }
@@ -302,7 +312,6 @@ public class BluetoothLeService extends Service {
 
         mBluetoothAdapter.startLeScan(mLeScanCallback);
     }
-
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
             new BluetoothAdapter.LeScanCallback() {

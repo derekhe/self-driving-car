@@ -1,4 +1,4 @@
-package com.april1985.legocar;
+package com.april1985.legocar.ui;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -16,11 +16,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.april1985.legocar.R;
+import com.april1985.legocar.model.LegoCar;
+import com.april1985.legocar.service.BluetoothLeService;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class MainActivity extends AppCompatActivity {
     private String TAG = MainActivity.class.getSimpleName();
     private TextView status;
     private BluetoothLeService mBluetoothLeService;
     private boolean connected = false;
+    private Timer pingTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,17 +71,19 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             case R.id.action_connect:
                 mBluetoothLeService.scanAndConnect();
+                invalidateOptionsMenu();
                 return true;
             case R.id.action_disconnect:
                 mBluetoothLeService.disconnect();
                 connected = false;
+                invalidateOptionsMenu();
                 return true;
         }
 
-        invalidateOptionsMenu();
         return super.onOptionsItemSelected(item);
     }
 
+    private LegoCar legoCar;
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -83,6 +93,9 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
 
+            legoCar = new LegoCar(mBluetoothLeService);
+            mBluetoothLeService.setBtListener(legoCar);
+
             Log.e(TAG, "mBluetoothLeService is okay");
         }
 
@@ -91,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
             mBluetoothLeService = null;
         }
     };
+
+
 
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
@@ -115,11 +130,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "In what we need");
                     status.setText(R.string.connected);
                     invalidateOptionsMenu();
-                    break;
-                case BluetoothLeService.ACTION_DATA_AVAILABLE:
-                    Log.e(TAG, "RECV DATA");
-                    String data = intent.getStringExtra(BluetoothLeService.EXTRA_DATA);
-                    Log.e(TAG, data);
                     break;
             }
         }
@@ -147,6 +157,5 @@ public class MainActivity extends AppCompatActivity {
             mBluetoothLeService.disconnect();
             mBluetoothLeService.scanAndConnect();
         }
-
     }
 }
