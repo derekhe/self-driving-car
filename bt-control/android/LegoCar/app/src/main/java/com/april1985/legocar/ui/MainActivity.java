@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.april1985.legocar.R;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothLeService mBluetoothLeService;
     private ImageView carStatus;
     private boolean connected = false;
+    private ProgressBar batteryPercentage;
+    private TextView batteryText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
         status = (TextView) findViewById(R.id.btStatus);
         carStatus = (ImageView) findViewById(R.id.car_alive);
         carStatus.setImageResource(R.drawable.device_dead);
+        batteryPercentage = (ProgressBar) findViewById(R.id.battery);
+        batteryText = (TextView) findViewById(R.id.txtVoltage);
 
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
@@ -106,6 +111,11 @@ public class MainActivity extends AppCompatActivity {
                             } else {
                                 carStatus.setImageResource(R.drawable.device_dead);
                             }
+
+
+                            int voltagePercent = legoCar.getVoltagePercent();
+                            batteryPercentage.setProgress(voltagePercent);
+                            batteryText.setText(String.valueOf(legoCar.getVoltage()));
                         }
                     });
                 }

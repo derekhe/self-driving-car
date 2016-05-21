@@ -12,6 +12,8 @@ public class LegoCar implements BluetoothListener {
     private BluetoothLeService btService;
     private String TAG = LegoCar.class.getSimpleName();
     private CarStatusChangeListener carStatusListener;
+    private final int MAX_VOLTAGE = 8;
+    private int MIN_VOLTAGE = 6;
 
     public LegoCar(BluetoothLeService btService) {
         this.btService = btService;
@@ -20,6 +22,7 @@ public class LegoCar implements BluetoothListener {
     private Timer pingTimer;
     private boolean pingReplied = false;
     private boolean deviceAlive = false;
+    private float voltage = MAX_VOLTAGE;
 
     private void startPing() {
         pingTimer = new Timer();
@@ -29,8 +32,8 @@ public class LegoCar implements BluetoothListener {
                 deviceAlive = pingReplied;
                 pingReplied = false;
                 if (carStatusListener != null) carStatusListener.onStatusUpdated();
-                Log.e(TAG, "Device alive: " + deviceAlive);
                 btService.write("@");
+                btService.write("V");
             }
         }, 0, 500);
     }
@@ -53,12 +56,18 @@ public class LegoCar implements BluetoothListener {
 
     @Override
     public void onDataArrived(String data) {
-        String command = data.trim();
-        switch (command) {
-            case "@":
+        Log.e(TAG, data);
+        String[] strings = data.split("\r\n");
+
+        for (String command : strings) {
+            command = command.trim();
+            if (command.startsWith("@")) {
                 pingReplied = true;
-                break;
+            } else if (command.startsWith("V")) {
+                voltage = Float.parseFloat(command.substring(1));
+            }
         }
+
 
         if (carStatusListener != null) carStatusListener.onStatusUpdated();
     }
@@ -67,11 +76,15 @@ public class LegoCar implements BluetoothListener {
         return deviceAlive;
     }
 
-    public CarStatusChangeListener getCarStatusListener() {
-        return carStatusListener;
-    }
-
     public void setCarStatusListener(CarStatusChangeListener carStatusListener) {
         this.carStatusListener = carStatusListener;
+    }
+
+    public float getVoltage() {
+        return voltage;
+    }
+
+    public int getVoltagePercent() {
+        return (int) ((getVoltage() - MIN_VOLTAGE) / MAX_VOLTAGE * 100);
     }
 }
