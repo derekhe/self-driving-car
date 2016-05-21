@@ -85,6 +85,6 @@ public class LegoCar implements BluetoothListener {
     }
 
     public int getVoltagePercent() {
-        return (int) ((getVoltage() - MIN_VOLTAGE) / MAX_VOLTAGE * 100);
+        return (int) ((getVoltage() - MIN_VOLTAGE) / (MAX_VOLTAGE - MIN_VOLTAGE) * 100);
     }
 }
