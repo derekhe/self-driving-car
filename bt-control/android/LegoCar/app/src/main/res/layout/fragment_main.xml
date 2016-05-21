@@ -15,4 +15,12 @@
         android:layout_height="wrap_content"
         android:text="Not Connected" />
 
+    <ImageView
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:id="@+id/car_alive"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        />
+
 </RelativeLayout>

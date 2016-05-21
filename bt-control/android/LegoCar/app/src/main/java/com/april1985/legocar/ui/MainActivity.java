@@ -14,21 +14,20 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.april1985.legocar.R;
+import com.april1985.legocar.model.CarStatusChangeListener;
 import com.april1985.legocar.model.LegoCar;
 import com.april1985.legocar.service.BluetoothLeService;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
     private String TAG = MainActivity.class.getSimpleName();
     private TextView status;
     private BluetoothLeService mBluetoothLeService;
+    private ImageView carStatus;
     private boolean connected = false;
-    private Timer pingTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         status = (TextView) findViewById(R.id.btStatus);
+        carStatus = (ImageView) findViewById(R.id.car_alive);
+        carStatus.setImageResource(R.drawable.device_dead);
 
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
@@ -94,6 +95,22 @@ public class MainActivity extends AppCompatActivity {
             }
 
             legoCar = new LegoCar(mBluetoothLeService);
+            legoCar.setCarStatusListener(new CarStatusChangeListener() {
+                @Override
+                public void onStatusUpdated() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (legoCar.isAlive()) {
+                                carStatus.setImageResource(R.drawable.device_alive);
+                            } else {
+                                carStatus.setImageResource(R.drawable.device_dead);
+                            }
+                        }
+                    });
+                }
+            });
+
             mBluetoothLeService.setBtListener(legoCar);
 
             Log.e(TAG, "mBluetoothLeService is okay");
@@ -104,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
             mBluetoothLeService = null;
         }
     };
-
 
 
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {

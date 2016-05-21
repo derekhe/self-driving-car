@@ -2,8 +2,8 @@ package com.april1985.legocar.model;
 
 import android.util.Log;
 
-import com.april1985.legocar.service.BluetoothListener;
 import com.april1985.legocar.service.BluetoothLeService;
+import com.april1985.legocar.service.BluetoothListener;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -11,6 +11,7 @@ import java.util.TimerTask;
 public class LegoCar implements BluetoothListener {
     private BluetoothLeService btService;
     private String TAG = LegoCar.class.getSimpleName();
+    private CarStatusChangeListener carStatusListener;
 
     public LegoCar(BluetoothLeService btService) {
         this.btService = btService;
@@ -27,6 +28,7 @@ public class LegoCar implements BluetoothListener {
             public void run() {
                 deviceAlive = pingReplied;
                 pingReplied = false;
+                if (carStatusListener != null) carStatusListener.onStatusUpdated();
                 Log.e(TAG, "Device alive: " + deviceAlive);
                 btService.write("@");
             }
@@ -57,9 +59,19 @@ public class LegoCar implements BluetoothListener {
                 pingReplied = true;
                 break;
         }
+
+        if (carStatusListener != null) carStatusListener.onStatusUpdated();
     }
 
     public boolean isAlive() {
         return deviceAlive;
+    }
+
+    public CarStatusChangeListener getCarStatusListener() {
+        return carStatusListener;
+    }
+
+    public void setCarStatusListener(CarStatusChangeListener carStatusListener) {
+        this.carStatusListener = carStatusListener;
     }
 }
