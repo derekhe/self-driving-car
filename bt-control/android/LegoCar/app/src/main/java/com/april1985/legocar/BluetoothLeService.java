@@ -28,6 +28,7 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -39,20 +40,20 @@ import java.util.UUID;
  * given Bluetooth LE device.
  */
 public class BluetoothLeService extends Service {
-    public final static String ACTION_GATT_CONNECTED =
-            "com.april1985.legocar.ACTION_GATT_CONNECTED";
-    public final static String ACTION_GATT_DISCONNECTED =
-            "com.april1985.legocar.ACTION_GATT_DISCONNECTED";
-    public final static String ACTION_GATT_SERVICES_DISCOVERED =
-            "com.april1985.legocar.ACTION_GATT_SERVICES_DISCOVERED";
-    public final static String ACTION_DATA_AVAILABLE =
-            "com.april1985.legocar.ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_DATA =
-            "com.april1985.legocar.EXTRA_DATA";
+    public final static String ACTION_SEARCHING = "com.april1985.legocar.ACTION_SEARCHING";
+    public final static String ACTION_DISCONNECTED = "com.april1985.legocar.ACTION_DISCONNECTED";
+    public final static String ACTION_CONNECTED = "com.april1985.legocar.ACTION_CONNECTED";
+    public final static String ACTION_DATA_AVAILABLE = "com.april1985.legocar.ACTION_DATA_AVAILABLE";
+    public final static String EXTRA_DATA = "com.april1985.legocar.EXTRA_DATA";
+    public final static String ACTION_SEARCH_STOP = "com.april1985.legocar.ACTION_SEARCH_STOP";
+    public final static String ACTION_DEVICE_FOUND = "com.april1985.legocar.ACTION_DEVICE_FOUND";
+
     public final static UUID UUID_NOTIFY =
             UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
     public final static UUID UUID_SERVICE =
             UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
+
+    private static final long SCAN_PERIOD = 10000;
     private final static String TAG = BluetoothLeService.class.getSimpleName();
     private final IBinder mBinder = new LocalBinder();
     public BluetoothGattCharacteristic mNotifyCharacteristic;
@@ -60,8 +61,6 @@ public class BluetoothLeService extends Service {
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothGatt mBluetoothGatt;
 
-    // Implements callback methods for GATT events that the app cares about.  For example,
-    // connection change and services discovered.
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -69,7 +68,7 @@ public class BluetoothLeService extends Service {
             Log.i(TAG, "oldStatus=" + status + " NewStates=" + newState);
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    intentAction = ACTION_GATT_CONNECTED;
+                    intentAction = ACTION_SEARCHING;
 
                     broadcastUpdate(intentAction);
                     Log.i(TAG, "Connected to GATT server.");
@@ -77,7 +76,7 @@ public class BluetoothLeService extends Service {
                     Log.i(TAG, "Attempting to start service discovery:" +
                             mBluetoothGatt.discoverServices());
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                    intentAction = ACTION_GATT_DISCONNECTED;
+                    intentAction = ACTION_DISCONNECTED;
                     mBluetoothGatt.close();
                     mBluetoothGatt = null;
                     Log.i(TAG, "Disconnected from GATT server.");
@@ -113,6 +112,7 @@ public class BluetoothLeService extends Service {
             Log.e(TAG, "OnCharacteristicWrite");
         }
     };
+    private Handler mHandler = new Handler();
 
     public void WriteValue(String strValue) {
         mNotifyCharacteristic.setValue(strValue.getBytes());
@@ -135,7 +135,7 @@ public class BluetoothLeService extends Service {
                         Log.i(TAG, UUID_NOTIFY.toString());
                         mNotifyCharacteristic = gattCharacteristic;
                         setCharacteristicNotification(gattCharacteristic, true);
-                        broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+                        broadcastUpdate(ACTION_CONNECTED);
                         return;
                     }
                 }
@@ -215,7 +215,7 @@ public class BluetoothLeService extends Service {
 
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
         if (device == null) {
-            Log.w(TAG, "Device not found.  Unable to connect.");
+            Log.w(TAG, "Device not found.  Unable to scanAndConnect.");
             return false;
         }
 
@@ -289,5 +289,36 @@ public class BluetoothLeService extends Service {
         BluetoothLeService getService() {
             return BluetoothLeService.this;
         }
+    }
+
+    public void scanAndConnect() {
+        broadcastUpdate(ACTION_SEARCHING);
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                stopScan();
+            }
+        }, SCAN_PERIOD);
+
+        mBluetoothAdapter.startLeScan(mLeScanCallback);
+    }
+
+
+    private BluetoothAdapter.LeScanCallback mLeScanCallback =
+            new BluetoothAdapter.LeScanCallback() {
+
+                @Override
+                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
+                    if ("LEGO".equals(device.getName())) {
+                        stopScan();
+                        connect(device.getAddress());
+                        broadcastUpdate(ACTION_DEVICE_FOUND);
+                    }
+                }
+            };
+
+    private void stopScan() {
+        mBluetoothAdapter.stopLeScan(mLeScanCallback);
+        broadcastUpdate(ACTION_SEARCH_STOP);
     }
 }

@@ -7,6 +7,14 @@
         android:id="@+id/action_connect"
         android:orderInCategory="1"
         android:title="@string/action_connect"
+        android:visible="false"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_disconnect"
+        android:orderInCategory="1"
+        android:title="@string/action_disconnect"
+        android:visible="false"
         app:showAsAction="always" />
 
     <item

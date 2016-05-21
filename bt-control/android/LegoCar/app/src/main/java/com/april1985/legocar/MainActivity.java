@@ -1,8 +1,6 @@
 package com.april1985.legocar;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -10,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -20,12 +17,10 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
-    private static final long SCAN_PERIOD = 10000;
-    private BluetoothAdapter mBluetoothAdapter;
-    private Handler mHandler = new Handler();
     private String TAG = MainActivity.class.getSimpleName();
     private TextView status;
     private BluetoothLeService mBluetoothLeService;
+    private boolean connected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,8 +28,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        mBluetoothAdapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
 
         status = (TextView) findViewById(R.id.btStatus);
 
@@ -45,9 +38,11 @@ public class MainActivity extends AppCompatActivity {
 
     private IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
-        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BluetoothLeService.ACTION_SEARCHING);
+        intentFilter.addAction(BluetoothLeService.ACTION_DEVICE_FOUND);
+        intentFilter.addAction(BluetoothLeService.ACTION_SEARCH_STOP);
+        intentFilter.addAction(BluetoothLeService.ACTION_DISCONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_CONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_DATA_AVAILABLE);
         intentFilter.addAction(BluetoothDevice.ACTION_UUID);
         return intentFilter;
@@ -56,54 +51,29 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        menu.findItem(R.id.action_connect).setVisible(!connected);
+        menu.findItem(R.id.action_disconnect).setVisible(connected);
+
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                return true;
+            case R.id.action_connect:
+                mBluetoothLeService.scanAndConnect();
+                return true;
+            case R.id.action_disconnect:
+                mBluetoothLeService.disconnect();
+                connected = false;
+                return true;
         }
 
-        if (id == R.id.action_connect) {
-            scanLeDevice();
-            return true;
-        }
-
+        invalidateOptionsMenu();
         return super.onOptionsItemSelected(item);
     }
-
-    private void scanLeDevice() {
-        status.setText(R.string.device_scanning);
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            }
-        }, SCAN_PERIOD);
-
-        mBluetoothAdapter.startLeScan(mLeScanCallback);
-    }
-
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-
-                @Override
-                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.d(TAG, device.getName());
-                            if ("LEGO".equals(device.getName())) {
-                                mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                                status.setText(R.string.device_found);
-                                mBluetoothLeService.connect(device.getAddress());
-                            }
-                        }
-                    });
-                }
-            };
 
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
@@ -128,14 +98,24 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
             switch (action) {
-                case BluetoothLeService.ACTION_GATT_CONNECTED:
-                    Log.e(TAG, "Only gatt, just wait");
+                case BluetoothLeService.ACTION_SEARCHING:
+                    connected = false;
+                    status.setText(R.string.device_scanning);
                     break;
-                case BluetoothLeService.ACTION_GATT_DISCONNECTED:
-
+                case BluetoothLeService.ACTION_DEVICE_FOUND:
+                    connected = false;
+                    status.setText(R.string.device_found);
                     break;
-                case BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED:
+                case BluetoothLeService.ACTION_DISCONNECTED:
+                    status.setText(R.string.device_disconnected);
+                    connected = false;
+                    invalidateOptionsMenu();
+                    break;
+                case BluetoothLeService.ACTION_CONNECTED:
+                    connected = true;
                     Log.e(TAG, "In what we need");
+                    status.setText(R.string.connected);
+                    invalidateOptionsMenu();
                     break;
                 case BluetoothLeService.ACTION_DATA_AVAILABLE:
                     Log.e(TAG, "RECV DATA");
