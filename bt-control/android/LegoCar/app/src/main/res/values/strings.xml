@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Lego Car</string>
+    <string name="action_settings">Settings</string>
+    <string name="device_found">Device found</string>
+    <string name="device_scanning">\"Scanning\"</string>
+    <string name="action_connect">Connect</string>
+</resources>
