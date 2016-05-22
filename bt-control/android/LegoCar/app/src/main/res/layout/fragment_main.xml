@@ -31,6 +31,19 @@
         android:textAlignment="viewEnd" />
 
     <TextView
+        android:id="@+id/txtDistance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="false"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_toStartOf="@id/txtVoltage"
+        android:layout_weight="0.2"
+        android:minWidth="60dp"
+        android:text="Distance"
+        android:textAlignment="viewEnd"/>
+
+    <TextView
         android:id="@+id/btStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -18,6 +18,8 @@ public class LegoCar implements BluetoothListener {
     private boolean pingReplied = false;
     private boolean deviceAlive = false;
     private float voltage = MAX_VOLTAGE;
+    private Timer distanceTimer;
+    private float distance;
 
     public LegoCar(BluetoothLeService btService) {
         this.btService = btService;
@@ -46,9 +48,14 @@ public class LegoCar implements BluetoothListener {
 
         for (String command : strings) {
             command = command.trim();
+            pingReplied = true;
+
             if (command.startsWith("V")) {
                 voltage = Float.parseFloat(command.substring(1));
-                pingReplied = true;
+            }
+
+            if (command.startsWith("D")) {
+                distance = Float.parseFloat(command.substring(1));
             }
         }
 
@@ -68,6 +75,14 @@ public class LegoCar implements BluetoothListener {
             }
         }, 0, 1000);
 
+        distanceTimer = new Timer();
+        distanceTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (carStatusListener != null) carStatusListener.onStatusUpdated();
+                btService.write("D");
+            }
+        }, 0, 500);
     }
 
     public boolean isAlive() {
@@ -98,4 +113,7 @@ public class LegoCar implements BluetoothListener {
         btService.write("T " + throttle);
     }
 
+    public float getDistance() {
+        return distance;
+    }
 }

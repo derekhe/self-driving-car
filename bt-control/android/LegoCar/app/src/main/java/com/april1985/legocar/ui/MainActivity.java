@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -24,12 +25,16 @@ import com.april1985.legocar.service.BluetoothLeService;
 import com.jmedeisis.bugstick.Joystick;
 import com.jmedeisis.bugstick.JoystickListener;
 
+import org.w3c.dom.Text;
+
 public class MainActivity extends AppCompatActivity {
     private String TAG = MainActivity.class.getSimpleName();
     private TextView status;
+    private TextView distanceText;
     private BluetoothLeService mBluetoothLeService;
     private ImageView carStatus;
     private boolean connected = false;
+
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -81,9 +86,8 @@ public class MainActivity extends AppCompatActivity {
                                 carStatus.setImageResource(R.drawable.device_dead);
                             }
 
-
-                            int voltagePercent = legoCar.getVoltagePercent();
                             batteryText.setText(String.valueOf(legoCar.getVoltage()));
+                            distanceText.setText(String.valueOf(legoCar.getDistance()));
                         }
                     });
                 }
@@ -111,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
         carStatus = (ImageView) findViewById(R.id.car_alive);
         carStatus.setImageResource(R.drawable.device_dead);
         batteryText = (TextView) findViewById(R.id.txtVoltage);
+        distanceText = (TextView) findViewById(R.id.txtDistance);
 
         Intent gattServiceIntent = new Intent(this, BluetoothLeService.class);
         bindService(gattServiceIntent, mServiceConnection, BIND_AUTO_CREATE);

@@ -3,6 +3,7 @@
 #include <Servo.h>
 #include <SerialCommand.h>
 #include <SoftwareSerial.h>
+#include <NewPing.h>
 
 char DRIVE_PIN1 = 12;
 char DRIVE_PIN2 = 11;
@@ -15,6 +16,12 @@ Servo myservo;
 SerialCommand sCmd;
 
 bool pingReceived = false;
+
+#define TRIGGER_PIN  6  // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN     5  // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define MAX_DISTANCE 200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+
+NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
 int readArgument(int defaultValue = 255){
   char *arg;
@@ -73,6 +80,12 @@ void unrecognized() {
   Serial.println("Unknown");
 }
 
+void distance(){
+  int dist = sonar.ping_cm();
+  Serial.print("D");
+  Serial.println(dist, DEC);
+}
+
 void setup() {
   Serial.begin(115200);
   pinMode(DRIVE_PIN1, OUTPUT);
@@ -89,6 +102,7 @@ void setup() {
   sCmd.addCommand("R", reset);
   sCmd.addCommand("@", ping);
   sCmd.addCommand("V", voltage);
+  sCmd.addCommand("D", distance);
   sCmd.addDefaultHandler(unrecognized);
 }
 
