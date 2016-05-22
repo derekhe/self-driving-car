@@ -64,7 +64,7 @@ void steer() {
 }
 
 void voltage(){
-  float voltage = analogRead(VOLTAGE_SENSOR) * (5 / 1023.0) * (25 / 5);
+  float voltage = analogRead(VOLTAGE_SENSOR) * (5 / 1023.0) * (25 / 5) * 1.04;
   Serial.print("V");
   Serial.println(voltage);
 }
