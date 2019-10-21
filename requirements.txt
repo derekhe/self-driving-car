@@ -27,6 +27,6 @@ smbus-cffi==0.5.1
 sockjs-tornado==1.0.2
 spidev==3.0
 tornado==4.3
-urllib3==1.9.1
+urllib3==1.24.2
 wheel==0.24.0
 wiringpi2==2.32.0
