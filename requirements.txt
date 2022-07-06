@@ -4,7 +4,7 @@ chardet==2.3.0
 colorama==0.3.2
 geomag==0.9.2015
 gpiozero==1.1.0
-html5lib==0.999
+html5lib==0.999999999
 mcpi==0.1.1
 numpy==1.8.2
 pgzero==1.1
