@@ -11,7 +11,7 @@ pgzero==1.1
 picamera==1.10
 pifacecommon==4.2.1
 pifacedigitalio==3.1.0
-Pillow==2.6.1
+Pillow==9.3.0
 pycparser==2.14
 pygame==1.9.2a0
 pyserial==2.6
